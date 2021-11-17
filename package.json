@@ -4,13 +4,12 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "npm run build && node ./build/index.js",
-        "start:dev": "nodemon",
         "build": "rimraf ./build && tsc",
-        "lint": "eslint . --ext .ts",
-        "lint:fix": "eslint . --ext .ts --fix",
-        "prettier:check": "prettier --config .prettierrc --check \"src/**/*.{ts,css,html}\""
+        "lint": "eslint . --ext .ts --max-warnings=0",
+        "lint:fix": "eslint . --ext .ts --fix --max-warnings=0",
+        "prettier:fix": "prettier --config .prettierrc --fix \"src/\"",
+        "start": "npm run build && node ./build/index.js",
+        "start:dev": "nodemon"
     },
     "husky": {
         "hooks": {
@@ -18,8 +17,9 @@
         }
     },
     "lint-staged": {
-        "src/**/*.{ts,js,css,html}": [
-            "npm run prettier:check"
+        "src/*.{ts,js,css,html}": [
+            "npm run prettier:fix",
+            "npm run lint:fix"
         ]
     },
     "keywords": [],
@@ -30,7 +30,7 @@
         "@typescript-eslint/eslint-plugin": "^5.4.0",
         "@typescript-eslint/parser": "^5.4.0",
         "eslint": "^8.2.0",
-        "husky": "^7.0.4",
+        "husky": "^4.3.8",
         "lint-staged": "^12.0.2",
         "nodemon": "^2.0.15",
         "prettier": "^2.4.1",
