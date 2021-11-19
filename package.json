@@ -8,7 +8,7 @@
         "lint": "eslint . --ext .ts --max-warnings=0",
         "lint:fix": "eslint . --ext .ts --fix --max-warnings=0",
         "prettier:fix": "prettier --config .prettierrc --fix \"src/\"",
-        "start": "npm run build && node ./build/index.js",
+        "start": "node ./build/index.js",
         "start:dev": "nodemon"
     },
     "husky": {
