@@ -37,5 +37,5 @@ jobs:
 
             - name: serverless_deploy
               run: |
-                  npm run serverless:credentials,
+                  npm run serverless:credentials
                   npm run serverless:deploy
