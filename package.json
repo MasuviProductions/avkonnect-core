@@ -10,7 +10,7 @@
         "prettier:fix": "prettier --config .prettierrc --fix \"src/\"",
         "start": "node ./build/index.js",
         "start:dev": "nodemon",
-        "serverless:credentials": "serverless config credentials --provider aws --key ${secrets.AWS_KEY} --secret ${secrets.AWS_SECRET}",
+        "serverless:credentials": "serverless config credentials --provider aws --key ${{ secrets.AWS_KEY }} --secret ${{ secrets.AWS_SECRET }}",
         "serverless:deploy": "serverless deploy"
     },
     "husky": {
