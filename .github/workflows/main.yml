@@ -22,11 +22,6 @@ jobs:
 
         # Steps represent a sequence of tasks that will be executed as part of the job
         steps:
-          env:
-              AWS_KEY: ${{ secrets.AWS_KEY }}
-              AWS_SECRET: ${{ secrets.AWS_SECRET }}
-
-
             # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
             - uses: actions/checkout@v2
 
@@ -41,6 +36,9 @@ jobs:
               run: npm run build
 
             - name: serverless_deploy
+              env:
+                  AWS_KEY: ${{ secrets.AWS_KEY }}
+                  AWS_SECRET: ${{ secrets.AWS_SECRET }}
               run: |
                   npm run serverless:credentials
                   npm run serverless:deploy
