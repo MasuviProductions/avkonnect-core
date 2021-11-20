@@ -30,7 +30,7 @@ jobs:
               run: npm install
 
             - name: lint
-              run: npm run lint
+              run: npm run lint:fix
 
             - name: build
               run: npm run build
