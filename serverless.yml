@@ -1,6 +1,6 @@
 # serverless.yml
 
-service: my-express-application
+service: avconnect-backend
 
 provider:
     name: aws

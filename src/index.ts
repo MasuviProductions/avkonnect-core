@@ -1,9 +1,7 @@
 import express from 'express';
-import serverless from 'serverless-http';
-// import ENV from './constants/env';
+import serverless, { Handler } from 'serverless-http';
 import loggerHandler from './middlewares/loggerHandler';
 import ROUTER from './routes';
-// import LOGGER from './utils/logger';
 
 const APP = express();
 
@@ -13,7 +11,7 @@ APP.use(loggerHandler);
 // Routes
 APP.use('/api/v1/', ROUTER);
 
-const handler = () => serverless(APP);
+const handler = (): Handler => serverless(APP);
 
 export { handler };
 export default APP;
