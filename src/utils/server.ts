@@ -1,4 +1,4 @@
-import APP from '..';
+import { APP } from '..';
 import ENV from '../constants/env';
 import LOGGER from './logger';
 

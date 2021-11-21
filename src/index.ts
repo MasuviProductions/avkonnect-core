@@ -13,5 +13,4 @@ APP.use('/api/v1/', ROUTER);
 
 const handler = (): Handler => serverless(APP);
 
-export { handler };
-export default APP;
+export { handler, APP };
