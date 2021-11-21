@@ -5,14 +5,15 @@ import loggerHandler from './middlewares/loggerHandler';
 import ROUTER from './routes';
 // import LOGGER from './utils/logger';
 
-const app = express();
+const APP = express();
 
 // Middlesware
-app.use(loggerHandler);
+APP.use(loggerHandler);
 
 // Routes
-app.use('/api/v1/', ROUTER);
+APP.use('/api/v1/', ROUTER);
 
-// app.listen(ENV.PORT, () => LOGGER.info(`Server listening on port ${ENV.PORT}`));
+const handler = () => serverless(APP);
 
-module.exports.handler = serverless(app);
+export { handler };
+export default APP;
