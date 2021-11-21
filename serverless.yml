@@ -17,7 +17,7 @@ package:
         - 'build'
 functions:
     app:
-        handler: ./build/index.handler
+        handler: ./build/serverless.handler
         events:
             - http: ANY /
             - http: 'ANY {proxy+}'
