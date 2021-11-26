@@ -8,4 +8,4 @@ const DYNAMOOSE_CLIENT = new dynamoose.aws.sdk.DynamoDB({
 });
 dynamoose.aws.ddb.set(DYNAMOOSE_CLIENT);
 
-export { DYNAMOOSE_CLIENT };
+export default DYNAMOOSE_CLIENT;
