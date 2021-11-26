@@ -39,6 +39,7 @@ jobs:
               env:
                   AWS_KEY: ${{ secrets.AWS_KEY }}
                   AWS_SECRET: ${{ secrets.AWS_SECRET }}
+                  AWS_REGION: ${{ secrets.AWS_REGION }}
               run: |
                   npm run serverless:credentials
                   npm run serverless:deploy

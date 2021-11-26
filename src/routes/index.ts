@@ -1,5 +1,7 @@
 import express from 'express';
-import { getSampleJSON, postSampleReq } from '../controllers';
+import controller from '../controllers';
+
+const { getSampleJSON, postSampleReq } = controller;
 
 const ROUTER = express.Router();
 

@@ -1,18 +1,25 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import asyncHandler from '../middlewares/asyncHandler';
+// import { DBQueries } from '../utils/db/queries';
 
-const getSampleJSON = (_req: Request, res: Response) => {
-    res.status(200).json({ message: 'successfully deployed app to aws lambda!' });
+const getSampleJSON = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    res.status(200).json({ message: 'message', token: req.user });
 };
 
-interface IUser {
-    user: string;
-    password: string;
-}
-
-const postSampleReq = (req: Request, res: Response) => {
-    if (req.body as IUser) {
+const postSampleReq = async (req: Request, res: Response) => {
+    if (req.body) {
         res.status(200).json({ body: true });
     }
 };
 
-export { getSampleJSON, postSampleReq };
+const controller = {
+    getSampleJSON: asyncHandler(getSampleJSON),
+    postSampleReq: asyncHandler(postSampleReq),
+};
+
+export default controller;
