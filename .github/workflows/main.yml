@@ -16,7 +16,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
     # This workflow contains a single job called "build"
-    build:
+    build-and-deploy:
         # The type of runner that the job will run on
         runs-on: ubuntu-latest
 
@@ -26,13 +26,19 @@ jobs:
             - uses: actions/checkout@v2
 
             - name: init
+              env:
+                  AWS_KEY: ${{ secrets.AWS_KEY }}
+                  AWS_SECRET: ${{ secrets.AWS_SECRET }}
+                  AWS_REGION: ${{ secrets.AWS_REGION }}
+                  COGNITO_CLIENT_DOMAIN: ${{ secrets.COGNITO_CLIENT_DOMAIN }}
+                  COGNITO_ISSUER_URL: ${{ secrets.COGNITO_ISSUER_URL }}
               run: |
                   touch .env
-                  echo "COGNITO_CLIENT_DOMAIN=${{ secrets.COGNITO_CLIENT_DOMAIN }}" >> .env
-                  echo "COGNITO_ISSUER_URL=${{ secrets.COGNITO_ISSUER_URL }}" >> .env
-                  echo "AWS_KEY=${{ secrets.AWS_KEY }}" >> .env
-                  echo "AWS_SECRET=${{ secrets.AWS_SECRET }}" >> .env
-                  echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
+                  echo "AWS_KEY=${AWS_KEY}" >> .env
+                  echo "AWS_SECRET=${AWS_SECRET}" >> .env
+                  echo "AWS_REGION=${AWS_REGION}" >> .env
+                  echo "COGNITO_CLIENT_DOMAIN=${COGNITO_CLIENT_DOMAIN}" >> .env
+                  echo "COGNITO_ISSUER_URL=${COGNITO_ISSUER_URL}" >> .env
                   cat .env
 
             # Runs a single command using the runners shell
