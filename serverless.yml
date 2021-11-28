@@ -15,6 +15,7 @@ package:
         - '!src/**'
         - 'node_modules'
         - 'build'
+        - '.env'
 functions:
     app:
         handler: ./build/serverless.handler

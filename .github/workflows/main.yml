@@ -25,6 +25,16 @@ jobs:
             # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
             - uses: actions/checkout@v2
 
+            - name: init
+              run: |
+                  touch .env
+                  echo "COGNITO_CLIENT_DOMAIN=${{ secrets.COGNITO_CLIENT_DOMAIN }}" >> .env
+                  echo "COGNITO_ISSUER_URL=${{ secrets.COGNITO_ISSUER_URL }}" >> .env
+                  echo "AWS_KEY=${{ secrets.AWS_KEY }}" >> .env
+                  echo "AWS_SECRET=${{ secrets.AWS_SECRET }}" >> .env
+                  echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
+                  cat .env
+
             # Runs a single command using the runners shell
             - name: install
               run: npm install
@@ -33,17 +43,10 @@ jobs:
               run: npm run lint:fix
 
             - name: build
-              env:
-                  COGNITO_CLIENT_DOMAIN: ${{ secrets.COGNITO_CLIENT_DOMAIN }}
-                  COGNITO_ISSUER_URL: ${{ secrets.COGNITO_ISSUER_URL }}
+
               run: npm run build
 
             - name: serverless_deploy
-              env:
-                  AWS_KEY: ${{ secrets.AWS_KEY }}
-                  AWS_SECRET: ${{ secrets.AWS_SECRET }}
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
-
               run: |
                   npm run serverless:credentials
                   npm run serverless:deploy
