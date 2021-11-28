@@ -33,6 +33,9 @@ jobs:
               run: npm run lint:fix
 
             - name: build
+              env:
+                  COGNITO_CLIENT_DOMAIN: ${{ secrets.COGNITO_CLIENT_DOMAIN }}
+                  COGNITO_ISSUER_URL: ${{ secrets.COGNITO_ISSUER_URL }}
               run: npm run build
 
             - name: serverless_deploy
@@ -40,8 +43,7 @@ jobs:
                   AWS_KEY: ${{ secrets.AWS_KEY }}
                   AWS_SECRET: ${{ secrets.AWS_SECRET }}
                   AWS_REGION: ${{ secrets.AWS_REGION }}
-                  COGNITO_CLIENT_DOMAIN: ${{ secrets.COGNITO_CLIENT_DOMAIN }}
-                  COGNITO_ISSUER_URL: ${{ secrets.COGNITO_ISSUER_URL }}
+
               run: |
                   npm run serverless:credentials
                   npm run serverless:deploy
