@@ -10,6 +10,7 @@ export interface IUser {
     email: string;
     followerIds: string[];
     followingIds: string[];
+    name: string;
     preferences?: unknown;
 }
 
@@ -23,6 +24,7 @@ const UserSchemaObj = new dynamoose.Schema(
         email: { type: String, rangeKey: true },
         followerIds: { type: Array },
         followingIds: { type: Array },
+        name: { type: String },
         preferences: { type: Object },
     },
     {

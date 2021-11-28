@@ -9,5 +9,6 @@ export const getNewUserModelFromJWTUserPayload = (jwtUserPayload: ICognitoUserIn
         email: jwtUserPayload.email,
         followerIds: new Array<string>(),
         followingIds: new Array<string>(),
+        name: jwtUserPayload.name,
     };
 };

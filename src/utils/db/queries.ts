@@ -16,6 +16,7 @@ const getUser = async (id: string, email: string): Promise<IUser | undefined> =>
         email: userDocument.email,
         followerIds: userDocument.followerIds,
         followingIds: userDocument.followingIds,
+        name: userDocument.name,
         preferences: userDocument.preferences,
     };
     return user;
