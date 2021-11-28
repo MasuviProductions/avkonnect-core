@@ -12,7 +12,7 @@ const APP = express();
 APP.use(cors());
 APP.use(express.json());
 
-// Middlesware
+// Middleware
 APP.use(loggerHandler);
 
 APP.use('/api/v1/test', ROUTER);
