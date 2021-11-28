@@ -7,6 +7,7 @@ export const ERROR_CODES = {
     NOT_FOUND_ERROR: 'not_found_error',
     RESOURCE_NOT_FOUND: 'resource_not_found',
     UNKNOWN_ERROR: 'unknown_error',
+    THIRD_PARTY_ERROR: 'third_party_error',
 };
 
 export const ERROR_MESSAGES = {
@@ -18,4 +19,6 @@ export const ERROR_MESSAGES = {
     MISSING_UPDATE_ACTIONS: "'updateActions' is missing in request body",
     PERMISSION: 'You do not have the required permission to perform this operation',
     RESOURCE_NOT_FOUND: 'The resource for key is not found',
+    COGNITO_USER_ERROR: 'Something went wrong while fetching userInfo from accessToken',
+    COGNITO_JWKS_ERROR: 'Something went wrong while fetching JWKs',
 };

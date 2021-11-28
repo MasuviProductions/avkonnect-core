@@ -1,7 +1,7 @@
-import { IJwtUserPayload } from '../../interfaces/jwt';
+import { ICognitoUserInfoApiResponse } from '../../interfaces/jwt';
 import { IUser } from '../../models/user';
 
-export const getNewUserModelFromJWTUserPayload = (jwtUserPayload: IJwtUserPayload): IUser => {
+export const getNewUserModelFromJWTUserPayload = (jwtUserPayload: ICognitoUserInfoApiResponse): IUser => {
     return {
         id: jwtUserPayload.sub,
         connectionIds: new Array<string>(),

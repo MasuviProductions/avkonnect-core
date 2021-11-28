@@ -5,11 +5,9 @@ const getUser = async (id: string, email: string): Promise<IUser | undefined> =>
         id: id,
         email: email,
     });
-
     if (!userDocument) {
         return;
     }
-
     const user: IUser = {
         id: userDocument.id,
         connectionIds: userDocument.connectionIds,
