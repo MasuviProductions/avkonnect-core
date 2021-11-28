@@ -19,19 +19,19 @@ jobs:
     build-and-deploy:
         # The type of runner that the job will run on
         runs-on: ubuntu-latest
+        env:
+            AWS_KEY: ${{ secrets.AWS_KEY }}
+            AWS_SECRET: ${{ secrets.AWS_SECRET }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+            COGNITO_CLIENT_DOMAIN: ${{ secrets.COGNITO_CLIENT_DOMAIN }}
+            COGNITO_ISSUER_URL: ${{ secrets.COGNITO_ISSUER_URL }}
 
         # Steps represent a sequence of tasks that will be executed as part of the job
         steps:
             # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
             - uses: actions/checkout@v2
 
-            - name: init
-              env:
-                  AWS_KEY: ${{ secrets.AWS_KEY }}
-                  AWS_SECRET: ${{ secrets.AWS_SECRET }}
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
-                  COGNITO_CLIENT_DOMAIN: ${{ secrets.COGNITO_CLIENT_DOMAIN }}
-                  COGNITO_ISSUER_URL: ${{ secrets.COGNITO_ISSUER_URL }}
+            - name: init-env
               run: |
                   touch .env
                   echo "AWS_KEY=${AWS_KEY}" >> .env
