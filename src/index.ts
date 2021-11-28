@@ -6,8 +6,11 @@ import loggerHandler from './middlewares/loggerHandler';
 import ROUTER from './routes';
 import AUTH_ROUTER from './routes/auth';
 import USER_ROUTER from './routes/user';
+import initDynamoDB from './utils/db/client';
 
 const APP = express();
+
+initDynamoDB();
 
 APP.use(cors());
 APP.use(express.json());
