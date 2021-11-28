@@ -1,8 +1,6 @@
 import dynamoose from 'dynamoose';
 import ENV from '../../constants/env';
 
-console.log('Dynamoose settings', ENV.AWS.SECRET, ENV.AWS.KEY, ENV.AWS.REGION);
-
 const initDynamoDB = () => {
     const DYNAMOOSE_CLIENT = new dynamoose.aws.sdk.DynamoDB({
         region: ENV.AWS.REGION,

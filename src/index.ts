@@ -12,17 +12,17 @@ const APP = express();
 
 initDynamoDB();
 
+// Middleware
 APP.use(cors());
 APP.use(express.json());
-
-// Middleware
 APP.use(loggerHandler);
 
+// Test API service route
 APP.use('/api/v1/test', ROUTER);
 
+// Handle Authentication for APIs
 APP.use(authHandler);
-
-// Routes
+// API service routes
 APP.use('/api/v1/auth', AUTH_ROUTER);
 APP.use('/api/v1/users', USER_ROUTER);
 

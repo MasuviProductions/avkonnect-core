@@ -11,8 +11,7 @@ const authHandler = asyncHandler(async (req: Request, _res: Response, next: Next
     const accessToken = getBearerTokenFromApiRequest(req.headers);
     if (accessToken) {
         let jwtUserPayload;
-        const accessTokenPayload = await verfiyAccessToken(accessToken);
-        console.log(accessTokenPayload);
+        await verfiyAccessToken(accessToken);
         const cognitoUserInfo = await getCognitoUserInfo(accessToken);
         const user = await DBQueries.getUser(cognitoUserInfo.sub, cognitoUserInfo.email);
         if (!user) {
