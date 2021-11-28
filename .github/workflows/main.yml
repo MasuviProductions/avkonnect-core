@@ -1,23 +1,15 @@
-# This is a basic workflow to help you get started with Actions
+name: AVConnect Backend Deployment
 
-name: CI
-
-# Controls when the workflow will run
 on:
-    # Triggers the workflow on push or pull request events but only for the main branch
     push:
         branches: [main]
     pull_request:
         branches: [main]
 
-    # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-    # This workflow contains a single job called "build"
-    build-and-deploy:
-        # The type of runner that the job will run on
+    serverless-deployment:
         runs-on: ubuntu-latest
         env:
             AWS_KEY: ${{ secrets.AWS_KEY }}
@@ -26,12 +18,10 @@ jobs:
             COGNITO_CLIENT_DOMAIN: ${{ secrets.COGNITO_CLIENT_DOMAIN }}
             COGNITO_ISSUER_URL: ${{ secrets.COGNITO_ISSUER_URL }}
 
-        # Steps represent a sequence of tasks that will be executed as part of the job
         steps:
-            # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
             - uses: actions/checkout@v2
 
-            - name: init-env
+            - name: Intialize .env
               run: |
                   touch .env
                   echo "AWS_KEY=${AWS_KEY}" >> .env
@@ -40,19 +30,17 @@ jobs:
                   echo "COGNITO_CLIENT_DOMAIN=${COGNITO_CLIENT_DOMAIN}" >> .env
                   echo "COGNITO_ISSUER_URL=${COGNITO_ISSUER_URL}" >> .env
                   cat .env
-
             # Runs a single command using the runners shell
-            - name: install
+            - name: Install node packages
               run: npm install
 
-            - name: lint
+            - name: Code Lint
               run: npm run lint:fix
 
-            - name: build
-
+            - name: Generating build
               run: npm run build
 
-            - name: serverless_deploy
+            - name: Deploy to AWS
               run: |
                   npm run serverless:credentials
                   npm run serverless:deploy
