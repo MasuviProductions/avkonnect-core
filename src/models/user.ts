@@ -5,7 +5,7 @@ import { IDynamooseDocument } from '../interfaces/generic';
 export interface IUser {
     id: string;
     connectionIds: string[];
-    dateOfBirth: string;
+    dateOfBirth?: string;
     displayPicture?: string;
     email: string;
     followerIds: string[];

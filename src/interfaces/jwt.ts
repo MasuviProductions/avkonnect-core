@@ -10,9 +10,7 @@ export interface IJWTDecoded {
 export interface ICognitoUserInfoApiResponse {
     sub: string;
     address: string;
-    birthdate: string;
     email_verified: boolean;
-    gender: string;
     name: string;
     phone_number_verified: boolean;
     phone_number: string;

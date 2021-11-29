@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import asyncHandler from '../middlewares/asyncHandler';
-import LOGGER from '../utils/logger';
 
 const getAuthUser = asyncHandler(
     async (
@@ -11,7 +10,6 @@ const getAuthUser = asyncHandler(
     ) => {
         const user = req.user;
 
-        LOGGER.warn(JSON.stringify(user));
         return res.status(200).json(user);
     }
 );
