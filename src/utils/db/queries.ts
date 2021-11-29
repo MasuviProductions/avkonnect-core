@@ -1,23 +1,23 @@
 import User, { IUser } from '../../models/user';
 
 const getUser = async (id: string, email: string): Promise<IUser | undefined> => {
-    const userDocument = await User.get({
-        id: id,
+    const userDocument = await User.scan({
         email: email,
-    });
-    if (!userDocument) {
+    }).exec();
+    if (!userDocument[0]) {
         return;
     }
+    const fetchedUser = userDocument[0];
     const user: IUser = {
-        id: userDocument.id,
-        connectionIds: userDocument.connectionIds,
-        dateOfBirth: userDocument.dateOfBirth,
-        displayPicture: userDocument.displayPicture,
-        email: userDocument.email,
-        followerIds: userDocument.followerIds,
-        followingIds: userDocument.followingIds,
-        name: userDocument.name,
-        preferences: userDocument.preferences,
+        id: fetchedUser.id,
+        connectionIds: fetchedUser.connectionIds,
+        dateOfBirth: fetchedUser.dateOfBirth,
+        displayPicture: fetchedUser.displayPicture,
+        email: fetchedUser.email,
+        followerIds: fetchedUser.followerIds,
+        followingIds: fetchedUser.followingIds,
+        name: fetchedUser.name,
+        preferences: fetchedUser.preferences,
     };
     return user;
 };
