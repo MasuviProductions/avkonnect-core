@@ -12,9 +12,22 @@ const UserRefSchema = new dynamoose.Schema({
     email: { type: String },
 });
 
+export interface IUserConnection {
+    id: string;
+    isConnected: boolean;
+    isInitiatedByUser: boolean;
+    connectedAt?: number;
+}
+const UserConnectionScheme = new dynamoose.Schema({
+    id: { type: String },
+    isConnected: { type: Boolean },
+    isInitiatedByUser: { type: Boolean },
+    connectedAt: { type: Date },
+});
+
 export interface IUserSkill {
     skill: string;
-    endorserIds: string[];
+    endorsers: string[];
 }
 const UserSkillSchema = new dynamoose.Schema({
     skill: { type: String },
@@ -22,12 +35,12 @@ const UserSkillSchema = new dynamoose.Schema({
 });
 
 export interface IUserExperience {
-    company?: string;
+    company: string;
     currentlyWorking: boolean;
-    description?: string;
-    employmentType?: string;
+    description: string;
+    employmentType: string;
     endDate: number;
-    location?: string;
+    location: string;
     startDate: number;
     title: string;
 }
@@ -44,27 +57,27 @@ const UserExperienceSchema = new dynamoose.Schema({
 
 export interface IUser {
     id: string;
-    connections: string[];
-    currentPosition?: string;
-    dateOfBirth?: string;
-    displayPicture?: string;
+    connections: Array<IUserConnection>;
+    currentPosition: string;
+    dateOfBirth: number;
+    displayPicture: string;
     email: string;
-    experiences?: IUserExperience[];
-    followers: string[];
-    following: string[];
-    headline?: string;
+    experiences: Array<IUserExperience>;
+    followers: Array<string>;
+    following: Array<string>;
+    headline: string;
     name: string;
-    phone?: string;
+    phone: string;
     preferences?: unknown;
-    skills?: IUserSkill[];
+    skills: Array<IUserSkill>;
 }
 // Changes in UserSchemaObj must be updated in IUser
 const UserSchema = new dynamoose.Schema(
     {
         id: { type: String, hashKey: true },
-        connections: { type: Array, schema: Array.of(String) },
+        connections: { type: Array, schema: Array.of(UserConnectionScheme) },
         currentPosition: { type: String },
-        dateOfBirth: { type: String },
+        dateOfBirth: { type: Date },
         displayPicture: { type: String },
         email: { type: String },
         experieces: { type: Array, schema: Array.of(UserExperienceSchema) },
@@ -81,5 +94,9 @@ const UserSchema = new dynamoose.Schema(
     }
 );
 const User = dynamoose.model<IDynamooseDocument<IUser>>(TABLE.Users, UserSchema);
+
+export const READABLE_USER_PROPERTIES = ['id', 'email', 'followers', 'following', 'connections'] as const;
+
+export type IEditableUser = Partial<Omit<IUser, typeof READABLE_USER_PROPERTIES[number]>>;
 
 export default User;

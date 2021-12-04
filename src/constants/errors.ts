@@ -22,6 +22,10 @@ export const ERROR_MESSAGES = {
     RESOURCE_NOT_FOUND: 'The resource for key is not found',
     COGNITO_USER_ERROR: 'Something went wrong while fetching userInfo from accessToken',
     COGNITO_JWKS_ERROR: 'Something went wrong while fetching JWKs',
-    USER_ALREADY_FOLLOWING: 'User is already following them',
-    USER_NOT_FOLLOWING: 'User is not following them',
+    USER_FOLLOWING: 'User is already being followed',
+    USER_NOT_FOLLOWING: 'User must be followed to unfollow',
+    USER_CONNECTED: 'User is already connected',
+    USER_CONNECTION_REQUEST: 'Connection request already exists',
+    USER_NO_CONNECTION_REQUEST: 'No connection request from user',
+    USER_NOT_CONNECTED: 'User is not connected',
 };
