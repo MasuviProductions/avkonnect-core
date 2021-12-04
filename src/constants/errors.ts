@@ -28,4 +28,5 @@ export const ERROR_MESSAGES = {
     USER_CONNECTION_REQUEST: 'Connection request already exists',
     USER_NO_CONNECTION_REQUEST: 'No connection request from user',
     USER_NOT_CONNECTED: 'User is not connected',
+    USER_REQUEST_SELF: 'Request to self not allowed',
 };

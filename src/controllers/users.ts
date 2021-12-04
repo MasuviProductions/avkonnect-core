@@ -66,6 +66,9 @@ const postFollowingForUser = async (
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
     }
+    if (userId === followingId) {
+        throw new HttpError(ERROR_MESSAGES.USER_REQUEST_SELF, 400, ERROR_CODES.REDUNDANT_ERROR);
+    }
     await dynamoose.transaction([
         DBQueries.updateUserFollowResourceTransaction(userId, followingId, 'following'),
         DBQueries.updateUserFollowResourceTransaction(followingId, userId, 'followers'),
@@ -89,6 +92,9 @@ const deleteFollowingForUser = async (
     const authUser = req.user;
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+    }
+    if (userId === followingId) {
+        throw new HttpError(ERROR_MESSAGES.USER_REQUEST_SELF, 400, ERROR_CODES.REDUNDANT_ERROR);
     }
     await dynamoose.transaction([
         DBQueries.deleteUserFollowResourceTransaction(userId, followingId, 'following'),
@@ -114,6 +120,9 @@ const postCreateConnectionForUser = async (
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
     }
+    if (userId === connectionId) {
+        throw new HttpError(ERROR_MESSAGES.USER_REQUEST_SELF, 400, ERROR_CODES.REDUNDANT_ERROR);
+    }
     await dynamoose.transaction([
         DBQueries.createUserConnectionTransaction(userId, connectionId, true),
         DBQueries.createUserConnectionTransaction(connectionId, userId, false),
@@ -137,6 +146,9 @@ const patchConfirmConnectionForUser = async (
     const authUser = req.user;
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+    }
+    if (userId === connectionId) {
+        throw new HttpError(ERROR_MESSAGES.USER_REQUEST_SELF, 400, ERROR_CODES.REDUNDANT_ERROR);
     }
     const connectedAt = Date.now();
     await dynamoose.transaction([
@@ -173,6 +185,9 @@ const deleteConnectionForUser = async (
     const authUser = req.user;
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+    }
+    if (userId === connectionId) {
+        throw new HttpError(ERROR_MESSAGES.USER_REQUEST_SELF, 400, ERROR_CODES.REDUNDANT_ERROR);
     }
     await dynamoose.transaction([
         DBQueries.deleteUserConnectionTransaction(userId, connectionId),
