@@ -1,21 +1,23 @@
 import { NextFunction, Request, Response } from 'express';
 import { ERROR_CODES } from '../constants/errors';
-import { HttpErrorResponse } from '../utils/error';
+import { HttpResponse } from '../interfaces/generic';
+import { HttpError } from '../utils/error';
 
 const errorHandler = (
-    err: HttpErrorResponse,
+    err: HttpError,
     _req: Request,
     res: Response,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _next: NextFunction
 ): Response => {
-    return res.status(err.statusCode ?? 500).send({
+    const response: HttpResponse = {
         success: false,
         error: {
             message: err.message || 'Server Error',
-            errorCode: err.errorCode || ERROR_CODES.UNKNOWN_ERROR,
+            code: err.errorCode || ERROR_CODES.UNKNOWN_ERROR,
         },
-    });
+    };
+    return res.status(err.statusCode ?? 500).send(response);
 };
 
 export default errorHandler;

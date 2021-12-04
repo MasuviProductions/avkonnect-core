@@ -8,25 +8,32 @@ import {
     IJWTHeader,
 } from '../interfaces/jwt';
 import jwkToPem, { JWK } from 'jwk-to-pem';
-import { HttpErrorResponse } from './error';
+import { HttpError } from './error';
 import { ERROR_CODES, ERROR_MESSAGES } from '../constants/errors';
 import { IncomingHttpHeaders } from 'http2';
 import axios from 'axios';
 import APP_URL from '../constants/api';
 
-const getJWKForTokenKid = async (kid: string): Promise<ICognitoUserPoolJWKKey | undefined> => {
+const getBearerTokenFromApiRequest = (httpHeaders: Readonly<IncomingHttpHeaders>): string | undefined => {
+    const bearer = httpHeaders.authorization;
+    if (!bearer) return;
+    const token = bearer.split(/\s/)?.[1];
+    return token;
+};
+
+const getJWKForTokenKid = async (kid: string): Promise<Readonly<ICognitoUserPoolJWKKey> | undefined> => {
     const cognitoUserpoolJWKs = await getCognitoUserPoolJWKs();
     const matchedJWK = await cognitoUserpoolJWKs.keys.find((jwk) => jwk.kid === kid);
     return matchedJWK;
 };
 
-const getCognitoUserPoolJWKs = async (): Promise<ICognitoUserPoolJWKsApiResponse> => {
+const getCognitoUserPoolJWKs = async (): Promise<Readonly<ICognitoUserPoolJWKsApiResponse>> => {
     try {
-        const axiosRes = await axios.get<ICognitoUserPoolJWKsApiResponse>(APP_URL.COGNITO_JWK);
+        const axiosRes = await axios.get<Readonly<ICognitoUserPoolJWKsApiResponse>>(APP_URL.COGNITO_JWK);
         const cognitoUserpoolJWKs = await axiosRes.data;
         return cognitoUserpoolJWKs;
     } catch {
-        throw new HttpErrorResponse(ERROR_MESSAGES.COGNITO_JWKS_ERROR, 400, ERROR_CODES.THIRD_PARTY_ERROR);
+        throw new HttpError(ERROR_MESSAGES.COGNITO_JWKS_ERROR, 400, ERROR_CODES.THIRD_PARTY_ERROR);
     }
 };
 
@@ -36,11 +43,11 @@ const decodeAccessToken = (token: string): IJWTDecoded => {
     return { header, body } as IJWTDecoded;
 };
 
-const verfiyAccessToken = async (token: string): Promise<ICognitoAccessTokenPayload> => {
+const verfiyAccessToken = async (token: string): Promise<Readonly<ICognitoAccessTokenPayload>> => {
     const decodedToken = decodeAccessToken(token);
     const matchedJWK = await getJWKForTokenKid(decodedToken.header.kid);
     if (!matchedJWK) {
-        throw new HttpErrorResponse(ERROR_MESSAGES.COGNITO_JWKS_ERROR, 400, ERROR_CODES.THIRD_PARTY_ERROR);
+        throw new HttpError(ERROR_MESSAGES.COGNITO_JWKS_ERROR, 400, ERROR_CODES.THIRD_PARTY_ERROR);
     }
     try {
         const jwkPublicKey: JWK = {
@@ -51,23 +58,16 @@ const verfiyAccessToken = async (token: string): Promise<ICognitoAccessTokenPayl
         const pem = jwkToPem(jwkPublicKey);
         const jwtPayload = jwt.verify(token, pem, {
             algorithms: [matchedJWK.alg],
-        }) as ICognitoAccessTokenPayload;
+        }) as Readonly<ICognitoAccessTokenPayload>;
         return jwtPayload;
     } catch (err) {
-        throw new HttpErrorResponse(ERROR_MESSAGES.INVALID_ACCESS_TOKEN, 401, ERROR_CODES.AUTHORIZATION_ERROR);
+        throw new HttpError(ERROR_MESSAGES.INVALID_ACCESS_TOKEN, 401, ERROR_CODES.AUTHORIZATION_ERROR);
     }
 };
 
-const getBearerTokenFromApiRequest = (httpHeaders: IncomingHttpHeaders): string | undefined => {
-    const bearer = httpHeaders.authorization;
-    if (!bearer) return;
-    const token = bearer.split(/\s/)?.[1];
-    return token;
-};
-
-const getCognitoUserInfo = async (token: string): Promise<ICognitoUserInfoApiResponse> => {
+const getCognitoUserInfo = async (token: string): Promise<Readonly<ICognitoUserInfoApiResponse>> => {
     try {
-        const axiosRes = await axios.get<ICognitoUserInfoApiResponse>(APP_URL.COGNITO_USER_INFO, {
+        const axiosRes = await axios.get<Readonly<ICognitoUserInfoApiResponse>>(APP_URL.COGNITO_USER_INFO, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -75,7 +75,7 @@ const getCognitoUserInfo = async (token: string): Promise<ICognitoUserInfoApiRes
         const cognitoUserInfo = await axiosRes.data;
         return cognitoUserInfo;
     } catch {
-        throw new HttpErrorResponse(ERROR_MESSAGES.COGNITO_USER_ERROR, 400, ERROR_CODES.UNKNOWN_ERROR);
+        throw new HttpError(ERROR_MESSAGES.COGNITO_USER_ERROR, 400, ERROR_CODES.UNKNOWN_ERROR);
     }
 };
 

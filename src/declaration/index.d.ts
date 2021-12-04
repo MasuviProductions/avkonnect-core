@@ -1,8 +1,8 @@
-import { IUser } from '../models/user';
+import { IMinifiedUser } from '../interfaces/api';
 
 declare module 'express' {
     interface Request {
-        user?: IUser;
+        user?: Readonly<IMinifiedUser>;
     }
 }
 export = 'express';

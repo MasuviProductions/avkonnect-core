@@ -2,9 +2,9 @@ import { NextFunction, Request, Response } from 'express';
 import { ERROR_CODES, ERROR_MESSAGES } from '../constants/errors';
 import { IUser } from '../models/user';
 import { getBearerTokenFromApiRequest, getCognitoUserInfo, verfiyAccessToken } from '../utils/auth';
-import { getNewUserModelFromJWTUserPayload } from '../utils/db/helpers';
+import { getMinifiedUser, getNewUserModelFromJWTUserPayload } from '../utils/db/helpers';
 import { DBQueries } from '../utils/db/queries';
-import { HttpErrorResponse } from '../utils/error';
+import { HttpError } from '../utils/error';
 import asyncHandler from './asyncHandler';
 
 const authHandler = asyncHandler(async (req: Request, _res: Response, next: NextFunction) => {
@@ -13,16 +13,17 @@ const authHandler = asyncHandler(async (req: Request, _res: Response, next: Next
         let jwtUserPayload;
         await verfiyAccessToken(accessToken);
         const cognitoUserInfo = await getCognitoUserInfo(accessToken);
-        const user = await DBQueries.getUser(cognitoUserInfo.sub, cognitoUserInfo.email);
-        if (!user) {
+        // TODO: Merge user in cognito  pool
+        try {
+            const user = await DBQueries.getUserByEmail(cognitoUserInfo.email);
+            jwtUserPayload = user;
+        } catch {
             const newUser: IUser = getNewUserModelFromJWTUserPayload(cognitoUserInfo);
             const createdUser = (await DBQueries.createUser(newUser)) as IUser;
             jwtUserPayload = createdUser;
-        } else {
-            jwtUserPayload = user;
         }
-        req.user = jwtUserPayload;
-    } else throw new HttpErrorResponse(ERROR_CODES.AUTHENTICATION_ERROR, 401, ERROR_MESSAGES.MISSING_ACCESS_TOKEN);
+        req.user = getMinifiedUser(jwtUserPayload);
+    } else throw new HttpError(ERROR_CODES.AUTHENTICATION_ERROR, 401, ERROR_MESSAGES.MISSING_ACCESS_TOKEN);
     next();
 });
 
