@@ -9,7 +9,7 @@ if (ENV.DEPLOYMENT_ENV === 'prod') {
 const LOGGER = {
     info: (msg: string): void => log.info(`[INFO]: ${msg}`),
     warn: (msg: string): void => log.warn(`[WARN]: ${msg}`),
-    danger: (msg: string): void => log.info(`[DANGER]: ${msg}`),
+    danger: (msg: string): void => log.info(`[ERROR]: ${msg}`),
 };
 
 export default LOGGER;
