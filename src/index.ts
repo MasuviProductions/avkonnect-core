@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import authHandler from './middlewares/authHandler';
 import errorHandler from './middlewares/errorHandler';
 import loggerHandler from './middlewares/loggerHandler';
@@ -14,6 +15,7 @@ initDynamoDB();
 
 // Middleware
 APP.use(cors());
+APP.use(helmet());
 APP.use(express.json());
 APP.use(loggerHandler);
 

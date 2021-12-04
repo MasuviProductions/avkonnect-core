@@ -34,6 +34,7 @@
         "dynamoose": "^2.8.2",
         "express": "^4.17.1",
         "express-validator": "^6.13.0",
+        "helmet": "^4.6.0",
         "jsonwebtoken": "^8.5.1",
         "jwk-to-pem": "^2.0.5",
         "loglevel": "^1.8.0",
