@@ -16,13 +16,10 @@ const getUserProfile = async (
 ) => {
     const userId = req.params.user_id;
     const authUser = req.user;
-
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
     }
-
     const user = await DBQueries.getUserById(authUser.id as string);
-
     const response: HttpResponse = {
         success: true,
         data: user,
@@ -43,13 +40,10 @@ const patchUserProfile = async (
     const userId = req.params.user_id;
     const userUpdateDetails: IEditableUser = req.body;
     const authUser = req.user;
-
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
     }
-
     const user = await DBQueries.updateUser(userId, userUpdateDetails);
-
     const response: HttpResponse = {
         success: true,
         data: user,
@@ -66,21 +60,17 @@ const postFollowingForUser = async (
     const userId = req.params.user_id;
     const followingId = req.params.following_id;
     const authUser = req.user;
-
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
     }
-
     if (userId === followingId) {
         throw new HttpError(ERROR_MESSAGES.USER_REQUEST_SELF, 400, ERROR_CODES.REDUNDANT_ERROR);
     }
-
     await dynamoose.transaction([
         DBQueries.updateUserFollowResourceTransaction(userId, followingId, 'following'),
         DBQueries.updateUserFollowResourceTransaction(followingId, userId, 'followers'),
     ]);
     const user = await DBQueries.getUserById(userId);
-
     const response: HttpResponse = {
         success: true,
         data: user.following,
@@ -97,21 +87,17 @@ const deleteFollowingForUser = async (
     const userId = req.params.user_id;
     const followingId = req.params.following_id;
     const authUser = req.user;
-
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
     }
-
     if (userId === followingId) {
         throw new HttpError(ERROR_MESSAGES.USER_REQUEST_SELF, 400, ERROR_CODES.REDUNDANT_ERROR);
     }
-
     await dynamoose.transaction([
         DBQueries.deleteUserFollowResourceTransaction(userId, followingId, 'following'),
         DBQueries.deleteUserFollowResourceTransaction(followingId, userId, 'followers'),
     ]);
     const user = await DBQueries.getUserById(userId);
-
     const response: HttpResponse = {
         success: true,
         data: user.following,
@@ -128,21 +114,17 @@ const postCreateConnectionForUser = async (
     const userId = req.params.user_id;
     const connectionId = req.params.connection_id;
     const authUser = req.user;
-
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
     }
-
     if (userId === connectionId) {
         throw new HttpError(ERROR_MESSAGES.USER_REQUEST_SELF, 400, ERROR_CODES.REDUNDANT_ERROR);
     }
-
     await dynamoose.transaction([
         DBQueries.createUserConnectionTransaction(userId, connectionId, true),
         DBQueries.createUserConnectionTransaction(connectionId, userId, false),
     ]);
     const user = await DBQueries.getUserById(userId);
-
     const response: HttpResponse = {
         success: true,
         data: user.connections,
@@ -160,32 +142,25 @@ const patchConfirmConnectionForUser = async (
     const connectionId = req.params.connection_id;
     const authUser = req.user;
     const connectedAt = Date.now();
-
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
     }
-
     if (userId === connectionId) {
         throw new HttpError(ERROR_MESSAGES.USER_REQUEST_SELF, 400, ERROR_CODES.REDUNDANT_ERROR);
     }
-
     await dynamoose.transaction([
         DBQueries.confirmUserConnectionTransaction(userId, connectionId, connectedAt),
         DBQueries.confirmUserConnectionTransaction(connectionId, userId, connectedAt, true),
     ]);
-
     await dynamoose.transaction([
         DBQueries.updateUserFollowResourceTransaction(userId, connectionId, 'following'),
         DBQueries.updateUserFollowResourceTransaction(connectionId, userId, 'followers'),
     ]);
-
     await dynamoose.transaction([
         DBQueries.updateUserFollowResourceTransaction(userId, connectionId, 'followers'),
         DBQueries.updateUserFollowResourceTransaction(connectionId, userId, 'following'),
     ]);
-
     const user = await DBQueries.getUserById(userId);
-
     const response: HttpResponse = {
         success: true,
         data: user.connections,
@@ -202,30 +177,24 @@ const deleteConnectionForUser = async (
     const userId = req.params.user_id;
     const connectionId = req.params.connection_id;
     const authUser = req.user;
-
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
     }
-
     if (userId === connectionId) {
         throw new HttpError(ERROR_MESSAGES.USER_REQUEST_SELF, 400, ERROR_CODES.REDUNDANT_ERROR);
     }
-
     await dynamoose.transaction([
         DBQueries.deleteUserConnectionTransaction(userId, connectionId),
         DBQueries.deleteUserConnectionTransaction(connectionId, userId),
     ]);
-
     await dynamoose.transaction([
         DBQueries.deleteUserFollowResourceTransaction(userId, connectionId, 'following'),
         DBQueries.deleteUserFollowResourceTransaction(connectionId, userId, 'followers'),
     ]);
-
     await dynamoose.transaction([
         DBQueries.deleteUserFollowResourceTransaction(userId, connectionId, 'followers'),
         DBQueries.deleteUserFollowResourceTransaction(connectionId, userId, 'following'),
     ]);
-
     const user = await DBQueries.getUserById(userId);
     const response: HttpResponse = {
         success: true,
@@ -246,11 +215,9 @@ const patchEndorseUserSkill = async (
     const user = await DBQueries.getUserById(userId);
     const userSkills: IUserSkill[] = user.skills;
     const matchedUserSkill = userSkills.find((userSkill) => userSkill.skill === skill);
-
     if (!matchedUserSkill) {
         throw new HttpError(ERROR_MESSAGES.RESOURCE_NOT_FOUND, 404, ERROR_CODES.NOT_FOUND_ERROR);
     }
-
     if (matchedUserSkill.endorsers) {
         if (matchedUserSkill.endorsers.includes(requestingUser?.id as string)) {
             throw new HttpError(ERROR_MESSAGES.USER_SKILL_ENDORSED, 400, ERROR_CODES.REDUNDANT_ERROR);
@@ -258,12 +225,9 @@ const patchEndorseUserSkill = async (
     } else {
         matchedUserSkill.endorsers = Array<string>();
     }
-
     matchedUserSkill.endorsers.push(requestingUser?.id as string);
     const updatedSkills: IEditableUser = { skills: userSkills };
-
     await DBQueries.updateUser(userId, updatedSkills);
-
     const response: HttpResponse = {
         success: true,
         data: 'success',
@@ -283,23 +247,16 @@ const deleteUnendorseUserSkill = async (
     const user = await DBQueries.getUserById(userId);
     const userSkills: IUserSkill[] = user.skills;
     const matchedUserSkill = userSkills.find((userSkill) => userSkill.skill === skill);
-
     if (!matchedUserSkill) {
         throw new HttpError(ERROR_MESSAGES.RESOURCE_NOT_FOUND, 404, ERROR_CODES.NOT_FOUND_ERROR);
     }
-
     const userEndorsers = matchedUserSkill.endorsers;
-
-    console.log('userEndorsers: ', userEndorsers);
-
     if (userEndorsers) {
         const endorserIndex = userEndorsers.findIndex((endorser) => endorser === (requestingUser?.id as string));
         if (endorserIndex >= 0) {
             userEndorsers[endorserIndex] = userEndorsers[userEndorsers.length - 1];
             userEndorsers.pop();
             const updatedSkills: IEditableUser = { skills: userSkills };
-
-            console.log('userSkills: ', updatedSkills);
 
             await DBQueries.updateUser(userId, updatedSkills);
 
@@ -308,11 +265,9 @@ const deleteUnendorseUserSkill = async (
                 data: 'success',
             };
 
-            console.log('Success response');
             return res.status(200).json(response);
         }
     }
-
     throw new HttpError(ERROR_MESSAGES.USER_SKILL_UNENDORSED, 400, ERROR_CODES.REDUNDANT_ERROR);
 };
 

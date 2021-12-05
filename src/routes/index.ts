@@ -1,12 +1,4 @@
-import express from 'express';
-import controller from '../controllers';
+import AUTH_ROUTER from './auth';
+import USER_ROUTER from './user';
 
-const { getSampleJSON, postSampleReq } = controller;
-
-const ROUTER = express.Router();
-
-ROUTER.route('').get(getSampleJSON);
-
-ROUTER.route('/post').post(postSampleReq);
-
-export default ROUTER;
+export { AUTH_ROUTER, USER_ROUTER };
