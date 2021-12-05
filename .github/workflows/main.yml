@@ -17,6 +17,7 @@ jobs:
             AWS_REGION: ${{ secrets.AWS_REGION }}
             COGNITO_CLIENT_DOMAIN: ${{ secrets.COGNITO_CLIENT_DOMAIN }}
             COGNITO_ISSUER_URL: ${{ secrets.COGNITO_ISSUER_URL }}
+            S3_BUCKET: ${{ secrets.S3_BUCKET }}
 
         steps:
             - uses: actions/checkout@v2
@@ -29,6 +30,7 @@ jobs:
                   echo "AWS_REGION=${AWS_REGION}" >> .env
                   echo "COGNITO_CLIENT_DOMAIN=${COGNITO_CLIENT_DOMAIN}" >> .env
                   echo "COGNITO_ISSUER_URL=${COGNITO_ISSUER_URL}" >> .env
+                  echo "S3_BUCKET=${S3_BUCKET}" >> .env
                   cat .env
             # Runs a single command using the runners shell
             - name: Install node packages

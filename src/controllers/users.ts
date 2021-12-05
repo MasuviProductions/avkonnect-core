@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-
 import dynamoose from 'dynamoose';
 import { ERROR_CODES, ERROR_MESSAGES } from '../constants/errors';
 import asyncHandler from '../middlewares/asyncHandler';
