@@ -17,10 +17,12 @@ const authHandler = asyncHandler(async (req: Request, _res: Response, next: Next
         try {
             const user = await DBQueries.getUserByEmail(cognitoUserInfo.email);
             jwtUserPayload = user;
-        } catch {
-            const newUser: IUser = getNewUserModelFromJWTUserPayload(cognitoUserInfo);
-            const createdUser = (await DBQueries.createUser(newUser)) as IUser;
-            jwtUserPayload = createdUser;
+        } catch (err: unknown) {
+            if (err instanceof HttpError && err.statusCode === 404) {
+                const newUser: IUser = getNewUserModelFromJWTUserPayload(cognitoUserInfo);
+                const createdUser = (await DBQueries.createUser(newUser)) as IUser;
+                jwtUserPayload = createdUser;
+            } else throw err;
         }
         req.user = getMinifiedUser(jwtUserPayload);
     } else throw new HttpError(ERROR_CODES.AUTHENTICATION_ERROR, 401, ERROR_MESSAGES.MISSING_ACCESS_TOKEN);

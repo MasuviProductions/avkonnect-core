@@ -9,7 +9,6 @@ const getAuthUser = async (
     _next: NextFunction
 ) => {
     const user = req.user;
-
     const response: HttpResponse = {
         success: true,
         data: user,

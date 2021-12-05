@@ -7,8 +7,9 @@ const getUserByEmail = async (email: string): Promise<IUser> => {
     const userDocuments = await User.scan({
         email: email,
     }).exec();
+
     if (!userDocuments?.[0]) {
-        throw new HttpError(ERROR_MESSAGES.RESOURCE_NOT_FOUND, 400, ERROR_CODES.RESOURCE_NOT_FOUND);
+        throw new HttpError(ERROR_MESSAGES.RESOURCE_NOT_FOUND, 404, ERROR_CODES.RESOURCE_NOT_FOUND);
     }
     return userDocuments[0];
 };
@@ -103,7 +104,8 @@ const createUserConnectionTransaction = async (
 const confirmUserConnectionTransaction = async (
     userId: string,
     connectionId: string,
-    connectedAt: number
+    connectedAt: number,
+    openAccessToConnect = false
 ): Promise<UpdateTransactionInput> => {
     const userConnections = await getUserConnections(userId);
     let isConnectionRequestPresent = false;
@@ -112,9 +114,13 @@ const confirmUserConnectionTransaction = async (
         if (userConnection.id === connectionId) {
             isConnectionRequestPresent = true;
             if (!userConnection.isConnected) {
-                userConnection.isConnected = true;
-                userConnection.connectedAt = connectedAt;
-                break;
+                if (openAccessToConnect || !userConnection.isInitiatedByUser) {
+                    userConnection.isConnected = true;
+                    userConnection.connectedAt = connectedAt;
+                    break;
+                } else {
+                    throw new HttpError(ERROR_MESSAGES.USER_CANNOT_CONFIRM, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+                }
             } else {
                 throw new HttpError(ERROR_MESSAGES.USER_CONNECTED, 400, ERROR_CODES.REDUNDANT_ERROR);
             }

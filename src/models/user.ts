@@ -1,6 +1,9 @@
 import * as dynamoose from 'dynamoose';
+import { ValueType } from 'dynamoose/dist/Schema';
 import { TABLE } from '../constants/db';
 import { IDynamooseDocument } from '../interfaces/generic';
+
+const validateIfNumberIsEpoch = (val: ValueType) => typeof val === 'number' && !!new Date(val);
 
 export interface IUserRef {
     id: string;
@@ -22,7 +25,7 @@ const UserConnectionScheme = new dynamoose.Schema({
     id: { type: String },
     isConnected: { type: Boolean },
     isInitiatedByUser: { type: Boolean },
-    connectedAt: { type: Date },
+    connectedAt: { type: Number, validate: validateIfNumberIsEpoch },
 });
 
 export interface IUserSkill {
@@ -49,9 +52,9 @@ const UserExperienceSchema = new dynamoose.Schema({
     currentlyWorking: { type: Boolean },
     description: { type: String },
     employmentType: { type: String },
-    endDate: { type: Date },
+    endDate: { type: Number, validate: validateIfNumberIsEpoch },
     location: { type: String },
-    startDate: { type: Date },
+    startDate: { type: Number, validate: validateIfNumberIsEpoch },
     title: { type: String },
 });
 
@@ -77,7 +80,7 @@ const UserSchema = new dynamoose.Schema(
         id: { type: String, hashKey: true },
         connections: { type: Array, schema: Array.of(UserConnectionScheme) },
         currentPosition: { type: String },
-        dateOfBirth: { type: Date },
+        dateOfBirth: { type: Number, validate: validateIfNumberIsEpoch },
         displayPicture: { type: String },
         email: { type: String },
         experieces: { type: Array, schema: Array.of(UserExperienceSchema) },
@@ -95,7 +98,15 @@ const UserSchema = new dynamoose.Schema(
 );
 const User = dynamoose.model<IDynamooseDocument<IUser>>(TABLE.Users, UserSchema);
 
-export const READABLE_USER_PROPERTIES = ['id', 'email', 'followers', 'following', 'connections'] as const;
+export const READABLE_USER_PROPERTIES = [
+    'id',
+    'email',
+    'followers',
+    'following',
+    'connections',
+    'createdAt',
+    'updatedAt',
+] as const;
 
 export type IEditableUser = Partial<Omit<IUser, typeof READABLE_USER_PROPERTIES[number]>>;
 

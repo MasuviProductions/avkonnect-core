@@ -153,7 +153,7 @@ const patchConfirmConnectionForUser = async (
     const connectedAt = Date.now();
     await dynamoose.transaction([
         DBQueries.confirmUserConnectionTransaction(userId, connectionId, connectedAt),
-        DBQueries.confirmUserConnectionTransaction(connectionId, userId, connectedAt),
+        DBQueries.confirmUserConnectionTransaction(connectionId, userId, connectedAt, true),
     ]);
 
     await dynamoose.transaction([

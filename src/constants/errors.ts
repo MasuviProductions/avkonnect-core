@@ -29,4 +29,5 @@ export const ERROR_MESSAGES = {
     USER_NO_CONNECTION_REQUEST: 'No connection request from user',
     USER_NOT_CONNECTED: 'User is not connected',
     USER_REQUEST_SELF: 'Request to self not allowed',
+    USER_CANNOT_CONFIRM: 'User cannot confirm connection',
 };
