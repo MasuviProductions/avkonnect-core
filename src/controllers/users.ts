@@ -284,7 +284,6 @@ const getUserDisplayPicture = async (
     const fileStream = getFileStreamFromS3(`${user?.id as string}/display_picture`);
     fileStream
         .on('error', (err: AWSError) => {
-            fileStream.destroy();
             const response: HttpResponse = {
                 success: false,
                 error: {
