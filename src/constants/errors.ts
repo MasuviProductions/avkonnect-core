@@ -9,6 +9,7 @@ export const ERROR_CODES = {
     UNKNOWN_ERROR: 'unknown_error',
     THIRD_PARTY_ERROR: 'third_party_error',
     REDUNDANT_ERROR: 'action_redundant',
+    UPLOAD_ERROR: 'upload_error',
 };
 
 export const ERROR_MESSAGES = {

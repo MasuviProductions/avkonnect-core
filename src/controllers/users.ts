@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+
 import dynamoose from 'dynamoose';
 import { ERROR_CODES, ERROR_MESSAGES } from '../constants/errors';
 import asyncHandler from '../middlewares/asyncHandler';
@@ -7,6 +8,9 @@ import { HttpError } from '../utils/error';
 import { HttpResponse } from '../interfaces/generic';
 import { validationResult } from 'express-validator';
 import { IEditableUser, IUserSkill } from '../models/user';
+import { deleteFileFromS3, getFileStreamFromS3, uploadFileToS3 } from '../utils/storage/utils';
+import { AWSError } from 'aws-sdk';
+import { unlinkFile } from '../utils/generic';
 
 const getUserProfile = async (
     req: Request,
@@ -271,6 +275,68 @@ const deleteUnendorseUserSkill = async (
     throw new HttpError(ERROR_MESSAGES.USER_SKILL_UNENDORSED, 400, ERROR_CODES.REDUNDANT_ERROR);
 };
 
+const getUserDisplayPicture = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const user = req.user;
+    const fileStream = getFileStreamFromS3(`${user?.id as string}/display_picture`);
+    fileStream
+        .on('error', (err: AWSError) => {
+            fileStream.destroy();
+            const response: HttpResponse = {
+                success: false,
+                error: {
+                    code: ERROR_CODES.NOT_FOUND_ERROR,
+                    message: err.message,
+                },
+            };
+            res.status(404).send(response);
+        })
+        .pipe(res);
+};
+
+const putUserDisplayPicture = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const user = req.user;
+    const userDp = req.file;
+    if (!userDp) {
+        throw new HttpError(ERROR_MESSAGES.USER_SKILL_UNENDORSED, 400, ERROR_CODES.REDUNDANT_ERROR);
+    }
+    const uploadedFileResponse = await uploadFileToS3(`${user?.id as string}/display_picture`, userDp);
+    await unlinkFile(userDp.path);
+    const updatedDisplayPicture: IEditableUser = { displayPicture: uploadedFileResponse.Location };
+    const updatedUser = await DBQueries.updateUser(user?.id as string, updatedDisplayPicture);
+    const response: HttpResponse = {
+        success: true,
+        data: updatedUser,
+    };
+    res.status(200).send(response);
+};
+
+const deleteUserDisplayPicture = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const user = req.user;
+    await deleteFileFromS3(`${user?.id as string}/display_picture`);
+    const updatedDisplayPicture: IEditableUser = { displayPicture: '' };
+    const updatedUser = await DBQueries.updateUser(user?.id as string, updatedDisplayPicture);
+    const response: HttpResponse = {
+        success: true,
+        data: updatedUser,
+    };
+    res.status(200).send(response);
+};
+
 const USER_CONTROLLER = {
     getUserProfile: asyncHandler(getUserProfile),
     patchUserProfile: asyncHandler(patchUserProfile),
@@ -281,6 +347,9 @@ const USER_CONTROLLER = {
     deleteFollowingForUser: asyncHandler(deleteFollowingForUser),
     patchEndorseUserSkill: asyncHandler(patchEndorseUserSkill),
     deleteUnendorseUserSkill: asyncHandler(deleteUnendorseUserSkill),
+    getUserDisplayPicture: asyncHandler(getUserDisplayPicture),
+    putUserDisplayPicture: asyncHandler(putUserDisplayPicture),
+    deleteUserDisplayPicture: asyncHandler(deleteUserDisplayPicture),
 };
 
 export default USER_CONTROLLER;

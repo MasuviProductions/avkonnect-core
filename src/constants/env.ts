@@ -9,6 +9,7 @@ const ENV = {
         KEY: process.env.AWS_KEY,
         SECRET: process.env.AWS_SECRET,
         REGION: process.env.AWS_REGION,
+        S3: { BUCKET: process.env.S3_BUCKET },
         COGNITO: {
             CLIENT_DOMAIN: process.env.COGNITO_CLIENT_DOMAIN,
             ISSUER_URL: process.env.COGNITO_ISSUER_URL,
