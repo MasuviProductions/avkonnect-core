@@ -30,7 +30,7 @@ const UserConnectionScheme = new dynamoose.Schema({
 
 export interface IUserSkill {
     skill: string;
-    endorsers: string[];
+    endorsers?: string[];
 }
 const UserSkillSchema = new dynamoose.Schema({
     skill: { type: String },

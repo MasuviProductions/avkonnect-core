@@ -20,6 +20,9 @@ userConnectionsRouter
     .patch(USER_CONTROLLER.patchConfirmConnectionForUser)
     .delete(USER_CONTROLLER.deleteConnectionForUser);
 
+USER_ROUTER.route('/:user_id/skills')
+    .patch([check('skill').exists()], USER_CONTROLLER.patchEndorseUserSkill)
+    .delete([check('skill').exists()], USER_CONTROLLER.deleteUnendorseUserSkill);
 USER_ROUTER.route('/:user_id')
     .get(USER_CONTROLLER.getUserProfile)
     .patch(
