@@ -9,9 +9,9 @@ import STORAGE_CLIENT from './client';
 
 const uploadFileToS3 = async (
     storageFileLocation: string,
-    file: Express.Multer.File
+    fileLocation: string
 ): Promise<S3.ManagedUpload.SendData> => {
-    const fileStream = fs.createReadStream(file.path);
+    const fileStream = fs.createReadStream(fileLocation);
     const uploadParams: S3.PutObjectRequest = {
         Body: fileStream,
         Bucket: ENV.AWS.S3.BUCKET as string,

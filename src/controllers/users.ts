@@ -7,9 +7,10 @@ import { HttpError } from '../utils/error';
 import { HttpResponse } from '../interfaces/generic';
 import { validationResult } from 'express-validator';
 import { IEditableUser, IUserSkill } from '../models/user';
-import { deleteFileFromS3, getFileStreamFromS3, uploadFileToS3 } from '../utils/storage/utils';
+import { deleteFileFromS3, getFileStreamFromS3 } from '../utils/storage/utils';
 import { AWSError } from 'aws-sdk';
-import { unlinkFile } from '../utils/generic';
+import { handleDisplayPictureUpload } from '../utils/generic';
+import { DISPLAY_PICTURE_RESOLUTION, THUMBNAIL_IMAGE_RESOLUTION } from '../constants/generic';
 
 const getUserProfile = async (
     req: Request,
@@ -280,8 +281,11 @@ const getUserDisplayPicture = async (
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _next: NextFunction
 ) => {
+    const isThumbnailImage = req.query.thumbnail === 'true';
     const user = req.user;
-    const fileStream = getFileStreamFromS3(`${user?.id as string}/display_picture`);
+    const fileStream = getFileStreamFromS3(
+        `${user?.id as string}/display_picture${isThumbnailImage ? '_thumbnail' : ''}`
+    );
     fileStream
         .on('error', (err: AWSError) => {
             const response: HttpResponse = {
@@ -307,9 +311,25 @@ const putUserDisplayPicture = async (
     if (!userDp) {
         throw new HttpError(ERROR_MESSAGES.USER_SKILL_UNENDORSED, 400, ERROR_CODES.REDUNDANT_ERROR);
     }
-    const uploadedFileResponse = await uploadFileToS3(`${user?.id as string}/display_picture`, userDp);
-    await unlinkFile(userDp.path);
-    const updatedDisplayPicture: IEditableUser = { displayPicture: uploadedFileResponse.Location };
+    const originalFileLocation = userDp.path;
+    const displayPictureStorageFileLocation = `${user?.id as string}/display_picture`;
+    const displayPictureFileLocation = `${originalFileLocation}_resized`;
+    const displayPictureFileResponse = await handleDisplayPictureUpload(
+        originalFileLocation,
+        displayPictureFileLocation,
+        displayPictureStorageFileLocation,
+        DISPLAY_PICTURE_RESOLUTION
+    );
+    const thumbnailImageStorageFileLocation = `${displayPictureStorageFileLocation}_thumbnail`;
+    const thumbnailFileLocation = `${originalFileLocation}_thumbnail`;
+    await handleDisplayPictureUpload(
+        originalFileLocation,
+        thumbnailFileLocation,
+        thumbnailImageStorageFileLocation,
+        THUMBNAIL_IMAGE_RESOLUTION,
+        true
+    );
+    const updatedDisplayPicture: IEditableUser = { displayPicture: displayPictureFileResponse.Location };
     const updatedUser = await DBQueries.updateUser(user?.id as string, updatedDisplayPicture);
     const response: HttpResponse = {
         success: true,
