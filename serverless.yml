@@ -15,7 +15,6 @@ package:
         - '!src/**'
         - 'node_modules'
         - 'build'
-        - 'tmp'
         - '.env'
 functions:
     app:
