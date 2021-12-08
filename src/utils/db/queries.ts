@@ -7,10 +7,6 @@ const getUserByEmail = async (email: string): Promise<IUser> => {
     const userDocuments = await User.scan({
         email: email,
     }).exec();
-
-    if (!userDocuments?.[0]) {
-        throw new HttpError(ERROR_MESSAGES.RESOURCE_NOT_FOUND, 404, ERROR_CODES.RESOURCE_NOT_FOUND);
-    }
     return userDocuments[0];
 };
 

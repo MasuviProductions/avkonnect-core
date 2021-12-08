@@ -282,9 +282,11 @@ const getUserDisplayPicture = async (
     _next: NextFunction
 ) => {
     const isThumbnailImage = req.query.thumbnail === 'true';
-    const user = req.user;
+    const userId = req.params.user_id;
+
+    console.log(userId);
     const fileStream = getFileStreamFromS3(
-        `${user?.id as string}/display_picture${isThumbnailImage ? '_thumbnail' : ''}`
+        `${userId as string}/display_picture${isThumbnailImage ? '_thumbnail' : ''}`
     );
     fileStream
         .on('error', (err: AWSError) => {
@@ -329,7 +331,7 @@ const putUserDisplayPicture = async (
         THUMBNAIL_IMAGE_RESOLUTION,
         true
     );
-    const updatedDisplayPicture: IEditableUser = { displayPicture: displayPictureFileResponse.Location };
+    const updatedDisplayPicture: IEditableUser = { displayPictureUrl: displayPictureFileResponse.Location };
     const updatedUser = await DBQueries.updateUser(user?.id as string, updatedDisplayPicture);
     const response: HttpResponse = {
         success: true,
@@ -346,7 +348,7 @@ const deleteUserDisplayPicture = async (
 ) => {
     const user = req.user;
     await deleteFileFromS3(`${user?.id as string}/display_picture`);
-    const updatedDisplayPicture: IEditableUser = { displayPicture: '' };
+    const updatedDisplayPicture: IEditableUser = { displayPictureUrl: '' };
     const updatedUser = await DBQueries.updateUser(user?.id as string, updatedDisplayPicture);
     const response: HttpResponse = {
         success: true,

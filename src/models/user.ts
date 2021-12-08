@@ -48,12 +48,26 @@ const UserExperienceSchema = new dynamoose.Schema({
     title: { type: String },
 });
 
+export interface IUserConnections {
+    isPrivate: boolean;
+}
+const UserPreferenceConnectionsScehma = new dynamoose.Schema({
+    isPrivate: { type: Boolean },
+});
+
+export interface IUserPreference {
+    connections: IUserConnections;
+}
+const UserPreferenceSchema = new dynamoose.Schema({
+    connections: { type: Object, schema: UserPreferenceConnectionsScehma },
+});
+
 export interface IUser {
     id: string;
     connections: Array<IUserConnection>;
     currentPosition: string;
     dateOfBirth: number;
-    displayPicture: string;
+    displayPictureUrl: string;
     email: string;
     experiences: Array<IUserExperience>;
     followers: Array<string>;
@@ -61,7 +75,7 @@ export interface IUser {
     headline: string;
     name: string;
     phone: string;
-    preferences?: unknown;
+    preferences: IUserPreference;
     skills: Array<IUserSkill>;
 }
 // Changes in UserSchemaObj must be updated in IUser
@@ -71,7 +85,7 @@ const UserSchema = new dynamoose.Schema(
         connections: { type: Array, schema: Array.of(UserConnectionScheme) },
         currentPosition: { type: String },
         dateOfBirth: { type: Number, validate: validateIfNumberIsEpoch },
-        displayPicture: { type: String },
+        displayPictureUrl: { type: String },
         email: { type: String },
         experieces: { type: Array, schema: Array.of(UserExperienceSchema) },
         followers: { type: Array, schema: Array.of(String) },
@@ -79,7 +93,7 @@ const UserSchema = new dynamoose.Schema(
         headline: { type: String },
         name: { type: String },
         phone: { type: String },
-        preferences: { type: Object },
+        preferences: { type: Object, schema: UserPreferenceSchema },
         skills: { type: Array, schema: Array.of(UserSkillSchema) },
     },
     {

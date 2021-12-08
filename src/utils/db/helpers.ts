@@ -9,7 +9,7 @@ export const getNewUserModelFromJWTUserPayload = (jwtUserPayload: ICognitoUserIn
         connections: new Array<IUserConnection>(),
         currentPosition: '',
         dateOfBirth: 0,
-        displayPicture: '',
+        displayPictureUrl: '',
         experiences: Array<IUserExperience>(),
         email: jwtUserPayload.email,
         followers: new Array<string>(),
@@ -17,6 +17,7 @@ export const getNewUserModelFromJWTUserPayload = (jwtUserPayload: ICognitoUserIn
         headline: '',
         name: jwtUserPayload.name,
         phone: '',
+        preferences: { connections: { isPrivate: false } },
         skills: Array<IUserSkill>(),
     };
 };
@@ -28,7 +29,7 @@ export const getMinifiedUser = (user: IUser): IMinifiedUser | undefined => {
     const minifiedUser: IMinifiedUser = {
         id: user.id,
         dateOfBirth: user.dateOfBirth,
-        displayPicture: user.displayPicture,
+        displayPictureUrl: user.displayPictureUrl,
         email: user.email,
         name: user.name,
     };

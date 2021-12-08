@@ -14,15 +14,13 @@ const authHandler = asyncHandler(async (req: Request, _res: Response, next: Next
         await verfiyAccessToken(accessToken);
         const cognitoUserInfo = await getCognitoUserInfo(accessToken);
         // TODO: Merge user in cognito  pool
-        try {
-            const user = await DBQueries.getUserByEmail(cognitoUserInfo.email);
+        const user = await DBQueries.getUserByEmail(cognitoUserInfo.email);
+        if (user) {
             jwtUserPayload = user;
-        } catch (err: unknown) {
-            if (err instanceof HttpError && err.statusCode === 404) {
-                const newUser: IUser = getNewUserModelFromJWTUserPayload(cognitoUserInfo);
-                const createdUser = (await DBQueries.createUser(newUser)) as IUser;
-                jwtUserPayload = createdUser;
-            } else throw err;
+        } else {
+            const newUser: IUser = getNewUserModelFromJWTUserPayload(cognitoUserInfo);
+            const createdUser = (await DBQueries.createUser(newUser)) as IUser;
+            jwtUserPayload = createdUser;
         }
         req.user = getMinifiedUser(jwtUserPayload);
     } else throw new HttpError(ERROR_CODES.AUTHENTICATION_ERROR, 401, ERROR_MESSAGES.MISSING_ACCESS_TOKEN);
