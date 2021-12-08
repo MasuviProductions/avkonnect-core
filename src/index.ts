@@ -14,7 +14,7 @@ const APP = express();
 initDynamoDB();
 
 // Middleware
-APP.use(cors());
+APP.use(cors({ origin: '*' }));
 APP.use(helmet());
 APP.use(express.json());
 APP.use(loggerHandler);
