@@ -10,7 +10,11 @@ import { IEditableUser, IUserSkill } from '../models/user';
 import { deleteFileFromS3, getFileStreamFromS3 } from '../utils/storage/utils';
 import { AWSError } from 'aws-sdk';
 import { handleDisplayPictureUpload } from '../utils/generic';
-import { DISPLAY_PICTURE_RESOLUTION, THUMBNAIL_IMAGE_RESOLUTION } from '../constants/generic';
+import {
+    BACKGROUND_PICTURE_RESOLUTION,
+    DISPLAY_PICTURE_RESOLUTION,
+    THUMBNAIL_IMAGE_RESOLUTION,
+} from '../constants/generic';
 
 const getUserProfile = async (
     req: Request,
@@ -20,10 +24,10 @@ const getUserProfile = async (
 ) => {
     const userId = req.params.user_id;
     const authUser = req.user;
-    if (!authUser || authUser.id !== userId) {
+    if (!authUser) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
     }
-    const user = await DBQueries.getUserById(authUser.id as string);
+    const user = await DBQueries.getUserById(userId as string);
     const response: HttpResponse = {
         success: true,
         data: user,
@@ -283,8 +287,6 @@ const getUserDisplayPicture = async (
 ) => {
     const isThumbnailImage = req.query.thumbnail === 'true';
     const userId = req.params.user_id;
-
-    console.log(userId);
     const fileStream = getFileStreamFromS3(
         `${userId as string}/display_picture${isThumbnailImage ? '_thumbnail' : ''}`
     );
@@ -311,7 +313,7 @@ const putUserDisplayPicture = async (
     const user = req.user;
     const userDp = req.file;
     if (!userDp) {
-        throw new HttpError(ERROR_MESSAGES.USER_SKILL_UNENDORSED, 400, ERROR_CODES.REDUNDANT_ERROR);
+        throw new HttpError(ERROR_MESSAGES.ACTION_INVALID, 400, ERROR_CODES.REDUNDANT_ERROR);
     }
     const originalFileLocation = userDp.path;
     const displayPictureStorageFileLocation = `${user?.id as string}/display_picture`;
@@ -357,6 +359,74 @@ const deleteUserDisplayPicture = async (
     res.status(200).send(response);
 };
 
+const getUserBackgroundPicture = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userId = req.params.user_id;
+    const fileStream = getFileStreamFromS3(`${userId as string}/background_picture`);
+    fileStream
+        .on('error', (err: AWSError) => {
+            const response: HttpResponse = {
+                success: false,
+                error: {
+                    code: ERROR_CODES.NOT_FOUND_ERROR,
+                    message: err.message,
+                },
+            };
+            res.status(404).send(response);
+        })
+        .pipe(res);
+};
+
+const putUserBackgroundPicture = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const user = req.user;
+    const userDp = req.file;
+    if (!userDp) {
+        throw new HttpError(ERROR_MESSAGES.ACTION_INVALID, 400, ERROR_CODES.REDUNDANT_ERROR);
+    }
+    const originalFileLocation = userDp.path;
+    const backgroundPictureStorageFileLocation = `${user?.id as string}/background_picture`;
+    const backgroundPictureFileLocation = `${originalFileLocation}_resized`;
+    const backgroundPictureFileResponse = await handleDisplayPictureUpload(
+        originalFileLocation,
+        backgroundPictureFileLocation,
+        backgroundPictureStorageFileLocation,
+        BACKGROUND_PICTURE_RESOLUTION
+    );
+    const updatedBackgroundPicture: IEditableUser = { backgroundPictureUrl: backgroundPictureFileResponse.Location };
+    const updatedUser = await DBQueries.updateUser(user?.id as string, updatedBackgroundPicture);
+    const response: HttpResponse = {
+        success: true,
+        data: updatedUser,
+    };
+    res.status(200).send(response);
+};
+
+const deleteUserBackgroundPicture = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const user = req.user;
+    await deleteFileFromS3(`${user?.id as string}/display_picture`);
+    const updatedBackgroundPicture: IEditableUser = { backgroundPictureUrl: '' };
+    const updatedUser = await DBQueries.updateUser(user?.id as string, updatedBackgroundPicture);
+    const response: HttpResponse = {
+        success: true,
+        data: updatedUser,
+    };
+    res.status(200).send(response);
+};
+
 const USER_CONTROLLER = {
     getUserProfile: asyncHandler(getUserProfile),
     patchUserProfile: asyncHandler(patchUserProfile),
@@ -370,6 +440,9 @@ const USER_CONTROLLER = {
     getUserDisplayPicture: asyncHandler(getUserDisplayPicture),
     putUserDisplayPicture: asyncHandler(putUserDisplayPicture),
     deleteUserDisplayPicture: asyncHandler(deleteUserDisplayPicture),
+    getUserBackgroundPicture: asyncHandler(getUserBackgroundPicture),
+    putUserBackgroundPicture: asyncHandler(putUserBackgroundPicture),
+    deleteUserBackgroundPicture: asyncHandler(deleteUserBackgroundPicture),
 };
 
 export default USER_CONTROLLER;

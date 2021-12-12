@@ -9,3 +9,8 @@ export const DISPLAY_PICTURE_RESOLUTION: IImageResolution = {
     width: 512,
     height: 512,
 };
+
+export const BACKGROUND_PICTURE_RESOLUTION: IImageResolution = {
+    width: 1080,
+    height: 270,
+};

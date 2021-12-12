@@ -9,11 +9,13 @@ const userFollowingRouter = express.Router({ mergeParams: true });
 const userConnectionsRouter = express.Router({ mergeParams: true });
 const userSkillsRouter = express.Router({ mergeParams: true });
 const userDisplayPictureRouter = express.Router({ mergeParams: true });
+const userBackgroundPictureRouter = express.Router({ mergeParams: true });
 
 USER_ROUTER.use('/:user_id/following', userFollowingRouter);
 USER_ROUTER.use('/:user_id/connections', userConnectionsRouter);
 USER_ROUTER.use('/:user_id/skills', userSkillsRouter);
 USER_ROUTER.use('/:user_id/displayPicture', userDisplayPictureRouter);
+USER_ROUTER.use('/:user_id/backgroundPicture', userBackgroundPictureRouter);
 
 userFollowingRouter
     .route('/:following_id')
@@ -33,6 +35,11 @@ userDisplayPictureRouter
     .get(USER_CONTROLLER.getUserDisplayPicture)
     .put(fileUploadHandler.single('displayPicture'), USER_CONTROLLER.putUserDisplayPicture)
     .delete(USER_CONTROLLER.deleteUserDisplayPicture);
+userBackgroundPictureRouter
+    .route('/')
+    .get(USER_CONTROLLER.getUserBackgroundPicture)
+    .put(fileUploadHandler.single('backgroundPicture'), USER_CONTROLLER.putUserBackgroundPicture)
+    .delete(USER_CONTROLLER.deleteUserBackgroundPicture);
 USER_ROUTER.route('/:user_id')
     .get(USER_CONTROLLER.getUserProfile)
     .patch(

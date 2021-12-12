@@ -6,6 +6,8 @@ import { IUser, IUserConnection, IUserExperience, IUserSkill } from '../../model
 export const getNewUserModelFromJWTUserPayload = (jwtUserPayload: ICognitoUserInfoApiResponse): IUser => {
     return {
         id: v4(),
+        aboutUser: '',
+        backgroundPictureUrl: '',
         connections: new Array<IUserConnection>(),
         currentPosition: '',
         dateOfBirth: 0,

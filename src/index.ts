@@ -21,7 +21,11 @@ APP.use(loggerHandler);
 APP.use(
     routeExcludeHandler(
         ['GET'],
-        ['/api/v1/users/:user_id/displayPicture\\?thumbnail=(true|false)', '/api/v1/users/:user_id/displayPicture'],
+        [
+            '/api/v1/users/:user_id/displayPicture\\?thumbnail=(true|false)',
+            '/api/v1/users/:user_id/displayPicture',
+            '/api/v1/users/:user_id/backgroundPicture',
+        ],
         authHandler
     )
 );
