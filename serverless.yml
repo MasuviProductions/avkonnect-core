@@ -25,7 +25,8 @@ functions:
         handler: ./build/serverless.handler
         events:
             - http:
-                  path: ANY /
+                  path: api/v1
+                  method: any
                   request:
                       contentHandling: CONVERT_TO_TEXT
                   response:
