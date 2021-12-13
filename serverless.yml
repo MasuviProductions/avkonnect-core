@@ -8,6 +8,9 @@ provider:
     stage: dev
     region: ap-south-1
     lambdaHashingVersion: 20201221
+    apiGateway:
+        binaryMediaTypes:
+            - '*/*'
 
 package:
     patterns:
@@ -16,16 +19,6 @@ package:
         - 'node_modules'
         - 'build'
         - '.env'
-
-plugins:
-    - serverless-apigw-binary
-
-custom:
-    apigwBinary:
-        types: #list of mime-types
-            - 'image/jpeg'
-            - 'text/html'
-            - 'multipart/form-data'
 
 functions:
     app:
