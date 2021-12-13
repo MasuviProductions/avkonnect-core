@@ -25,4 +25,8 @@ functions:
         handler: ./build/serverless.handler
         events:
             - http: ANY /
+                request:
+                    contentHandling: CONVERT_TO_TEXT
+                response:
+                    contentHandling: CONVERT_TO_TEXT
             - http: 'ANY {proxy+}'
