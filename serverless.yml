@@ -29,6 +29,4 @@ functions:
                   method: any
                   request:
                       contentHandling: CONVERT_TO_TEXT
-                  response:
-                      contentHandling: CONVERT_TO_TEXT
             - http: 'ANY {proxy+}'
