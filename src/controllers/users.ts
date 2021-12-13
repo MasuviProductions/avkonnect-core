@@ -290,6 +290,8 @@ const getUserDisplayPicture = async (
     const fileStream = getFileStreamFromS3(
         `${userId as string}/display_picture${isThumbnailImage ? '_thumbnail' : ''}`
     );
+    res.setHeader('Content-Type', 'image/jpeg');
+
     fileStream
         .on('error', (err: AWSError) => {
             const response: HttpResponse = {
