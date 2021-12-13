@@ -16,6 +16,17 @@ package:
         - 'node_modules'
         - 'build'
         - '.env'
+
+plugins:
+    - serverless-apigw-binary
+
+custom:
+    apigwBinary:
+        types: #list of mime-types
+            - 'image/jpeg'
+            - 'text/html'
+            - 'multipart/form-data'
+
 functions:
     app:
         handler: ./build/serverless.handler
