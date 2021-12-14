@@ -1,7 +1,6 @@
 import { AWSError, S3 } from 'aws-sdk';
 import { PromiseResult } from 'aws-sdk/lib/request';
 import fs from 'fs';
-import internal from 'stream';
 import ENV from '../../constants/env';
 import { ERROR_CODES } from '../../constants/errors';
 import { HttpError } from '../error';
@@ -42,13 +41,13 @@ const deleteFileFromS3 = async (
     }
 };
 
-const getFileStreamFromS3 = (storageFileLocation: string): internal.Readable => {
+const getFileFromS3 = (storageFileLocation: string): Promise<PromiseResult<S3.GetObjectOutput, AWSError>> => {
     const downLoadParams: S3.GetObjectRequest = {
         Bucket: ENV.AWS.S3.BUCKET as string,
         Key: storageFileLocation,
     };
-    const fileStream = STORAGE_CLIENT.getObject(downLoadParams).createReadStream();
+    const fileStream = STORAGE_CLIENT.getObject(downLoadParams).promise();
     return fileStream;
 };
 
-export { uploadFileToS3, deleteFileFromS3, getFileStreamFromS3 };
+export { uploadFileToS3, deleteFileFromS3, getFileFromS3 };

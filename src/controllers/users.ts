@@ -7,8 +7,7 @@ import { HttpError } from '../utils/error';
 import { HttpResponse } from '../interfaces/generic';
 import { validationResult } from 'express-validator';
 import { IEditableUser, IUserSkill } from '../models/user';
-import { deleteFileFromS3, getFileStreamFromS3 } from '../utils/storage/utils';
-import { AWSError } from 'aws-sdk';
+import { deleteFileFromS3, getFileFromS3 } from '../utils/storage/utils';
 import { handleDisplayPictureUpload } from '../utils/generic';
 import {
     BACKGROUND_PICTURE_RESOLUTION,
@@ -287,23 +286,10 @@ const getUserDisplayPicture = async (
 ) => {
     const isThumbnailImage = req.query.thumbnail === 'true';
     const userId = req.params.user_id;
-    const fileStream = getFileStreamFromS3(
-        `${userId as string}/display_picture${isThumbnailImage ? '_thumbnail' : ''}`
-    );
+    const file = await getFileFromS3(`${userId as string}/display_picture${isThumbnailImage ? '_thumbnail' : ''}`);
     res.setHeader('Content-Type', 'image/jpeg');
-
-    fileStream
-        .on('error', (err: AWSError) => {
-            const response: HttpResponse = {
-                success: false,
-                error: {
-                    code: ERROR_CODES.NOT_FOUND_ERROR,
-                    message: err.message,
-                },
-            };
-            res.status(404).send(response);
-        })
-        .pipe(res);
+    res.setHeader('isBase64Encoded', 'true');
+    res.send(file.Body);
 };
 
 const putUserDisplayPicture = async (
@@ -368,19 +354,10 @@ const getUserBackgroundPicture = async (
     _next: NextFunction
 ) => {
     const userId = req.params.user_id;
-    const fileStream = getFileStreamFromS3(`${userId as string}/background_picture`);
-    fileStream
-        .on('error', (err: AWSError) => {
-            const response: HttpResponse = {
-                success: false,
-                error: {
-                    code: ERROR_CODES.NOT_FOUND_ERROR,
-                    message: err.message,
-                },
-            };
-            res.status(404).send(response);
-        })
-        .pipe(res);
+    const file = await getFileFromS3(`${userId as string}/background_picture`);
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.setHeader('isBase64Encoded', 'true');
+    res.send(file.Body);
 };
 
 const putUserBackgroundPicture = async (
