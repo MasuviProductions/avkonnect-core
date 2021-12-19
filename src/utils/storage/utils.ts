@@ -1,6 +1,7 @@
 import { AWSError, S3 } from 'aws-sdk';
 import { PromiseResult } from 'aws-sdk/lib/request';
 import fs from 'fs';
+import { v4 } from 'uuid';
 import ENV from '../../constants/env';
 import { ERROR_CODES } from '../../constants/errors';
 import { HttpError } from '../error';
@@ -53,7 +54,7 @@ const getFileFromS3 = (storageFileLocation: string): Promise<PromiseResult<S3.Ge
 const generateUploadURL = async (storageFileLocation: string) => {
     const generateSignedURLParams = {
         Bucket: ENV.AWS.S3.BUCKET as string,
-        Key: storageFileLocation,
+        Key: `${storageFileLocation}_${v4()}`,
         Expires: 20,
     };
     const uploadURL = await STORAGE_CLIENT.getSignedUrlPromise('putObject', generateSignedURLParams);
