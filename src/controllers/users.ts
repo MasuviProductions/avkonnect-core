@@ -7,13 +7,7 @@ import { HttpError } from '../utils/error';
 import { HttpResponse } from '../interfaces/generic';
 import { validationResult } from 'express-validator';
 import { IEditableUser, IUserSkill } from '../models/user';
-import { deleteFileFromS3, getFileFromS3 } from '../utils/storage/utils';
-import { handleDisplayPictureUpload } from '../utils/generic';
-import {
-    BACKGROUND_PICTURE_RESOLUTION,
-    DISPLAY_PICTURE_RESOLUTION,
-    THUMBNAIL_IMAGE_RESOLUTION,
-} from '../constants/generic';
+import { generateUploadURL } from '../utils/storage/utils';
 
 const getUserProfile = async (
     req: Request,
@@ -278,130 +272,25 @@ const deleteUnendorseUserSkill = async (
     throw new HttpError(ERROR_MESSAGES.USER_SKILL_UNENDORSED, 400, ERROR_CODES.REDUNDANT_ERROR);
 };
 
-const getUserDisplayPicture = async (
+const getUserUploadSignedURL = async (
     req: Request,
     res: Response,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _next: NextFunction
 ) => {
-    const isThumbnailImage = req.query.thumbnail === 'true';
+    const authUser = req.user;
     const userId = req.params.user_id;
-    const file = await getFileFromS3(`${userId as string}/display_picture${isThumbnailImage ? '_thumbnail' : ''}`);
-    res.setHeader('Content-Type', 'image/jpeg');
-    res.setHeader('isBase64Encoded', 'true');
-    res.send(file.Body);
-};
-
-const putUserDisplayPicture = async (
-    req: Request,
-    res: Response,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _next: NextFunction
-) => {
-    const user = req.user;
-    const userDp = req.file;
-    if (!userDp) {
-        throw new HttpError(ERROR_MESSAGES.ACTION_INVALID, 400, ERROR_CODES.REDUNDANT_ERROR);
+    if (!authUser || authUser.id !== userId) {
+        throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
     }
-    const originalFileLocation = userDp.path;
-    const displayPictureStorageFileLocation = `${user?.id as string}/display_picture`;
-    const displayPictureFileLocation = `${originalFileLocation}_resized`;
-    const displayPictureFileResponse = await handleDisplayPictureUpload(
-        originalFileLocation,
-        displayPictureFileLocation,
-        displayPictureStorageFileLocation,
-        DISPLAY_PICTURE_RESOLUTION
-    );
-    const thumbnailImageStorageFileLocation = `${displayPictureStorageFileLocation}_thumbnail`;
-    const thumbnailFileLocation = `${originalFileLocation}_thumbnail`;
-    await handleDisplayPictureUpload(
-        originalFileLocation,
-        thumbnailFileLocation,
-        thumbnailImageStorageFileLocation,
-        THUMBNAIL_IMAGE_RESOLUTION,
-        true
-    );
-    const updatedDisplayPicture: IEditableUser = { displayPictureUrl: displayPictureFileResponse.Location };
-    const updatedUser = await DBQueries.updateUser(user?.id as string, updatedDisplayPicture);
-    const response: HttpResponse = {
-        success: true,
-        data: updatedUser,
-    };
-    res.status(200).send(response);
-};
-
-const deleteUserDisplayPicture = async (
-    req: Request,
-    res: Response,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _next: NextFunction
-) => {
-    const user = req.user;
-    await deleteFileFromS3(`${user?.id as string}/display_picture`);
-    const updatedDisplayPicture: IEditableUser = { displayPictureUrl: '' };
-    const updatedUser = await DBQueries.updateUser(user?.id as string, updatedDisplayPicture);
-    const response: HttpResponse = {
-        success: true,
-        data: updatedUser,
-    };
-    res.status(200).send(response);
-};
-
-const getUserBackgroundPicture = async (
-    req: Request,
-    res: Response,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _next: NextFunction
-) => {
-    const userId = req.params.user_id;
-    const file = await getFileFromS3(`${userId as string}/background_picture`);
-    res.setHeader('Content-Type', 'image/jpeg');
-    res.setHeader('isBase64Encoded', 'true');
-    res.send(file.Body);
-};
-
-const putUserBackgroundPicture = async (
-    req: Request,
-    res: Response,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _next: NextFunction
-) => {
-    const user = req.user;
-    const userDp = req.file;
-    if (!userDp) {
-        throw new HttpError(ERROR_MESSAGES.ACTION_INVALID, 400, ERROR_CODES.REDUNDANT_ERROR);
+    const imageType = req.query.imageType;
+    if (!imageType || !['display_picture', 'background_image'].includes(imageType as string)) {
+        throw new HttpError(ERROR_MESSAGES.USER_SIGNED_URL_QUERY_PARAM, 400, ERROR_CODES.RESOURCE_NOT_FOUND);
     }
-    const originalFileLocation = userDp.path;
-    const backgroundPictureStorageFileLocation = `${user?.id as string}/background_picture`;
-    const backgroundPictureFileLocation = `${originalFileLocation}_resized`;
-    const backgroundPictureFileResponse = await handleDisplayPictureUpload(
-        originalFileLocation,
-        backgroundPictureFileLocation,
-        backgroundPictureStorageFileLocation,
-        BACKGROUND_PICTURE_RESOLUTION
-    );
-    const updatedBackgroundPicture: IEditableUser = { backgroundPictureUrl: backgroundPictureFileResponse.Location };
-    const updatedUser = await DBQueries.updateUser(user?.id as string, updatedBackgroundPicture);
+    const signedURL = await generateUploadURL(`${authUser?.id as string}/${imageType}`);
     const response: HttpResponse = {
         success: true,
-        data: updatedUser,
-    };
-    res.status(200).send(response);
-};
-
-const deleteUserBackgroundPicture = async (
-    req: Request,
-    res: Response,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _next: NextFunction
-) => {
-    const user = req.user;
-    await deleteFileFromS3(`${user?.id as string}/display_picture`);
-    const updatedBackgroundPicture: IEditableUser = { backgroundPictureUrl: '' };
-    const updatedUser = await DBQueries.updateUser(user?.id as string, updatedBackgroundPicture);
-    const response: HttpResponse = {
-        success: true,
-        data: updatedUser,
+        data: signedURL,
     };
     res.status(200).send(response);
 };
@@ -416,12 +305,7 @@ const USER_CONTROLLER = {
     deleteFollowingForUser: asyncHandler(deleteFollowingForUser),
     patchEndorseUserSkill: asyncHandler(patchEndorseUserSkill),
     deleteUnendorseUserSkill: asyncHandler(deleteUnendorseUserSkill),
-    getUserDisplayPicture: asyncHandler(getUserDisplayPicture),
-    putUserDisplayPicture: asyncHandler(putUserDisplayPicture),
-    deleteUserDisplayPicture: asyncHandler(deleteUserDisplayPicture),
-    getUserBackgroundPicture: asyncHandler(getUserBackgroundPicture),
-    putUserBackgroundPicture: asyncHandler(putUserBackgroundPicture),
-    deleteUserBackgroundPicture: asyncHandler(deleteUserBackgroundPicture),
+    getUserUploadSignedURL: asyncHandler(getUserUploadSignedURL),
 };
 
 export default USER_CONTROLLER;

@@ -11,8 +11,3 @@ export interface HttpResponse {
     data?: unknown;
     error?: HttpResponseError;
 }
-
-export interface IImageResolution {
-    width: number;
-    height: number;
-}

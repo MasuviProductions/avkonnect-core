@@ -7,7 +7,7 @@ export const getNewUserModelFromJWTUserPayload = (jwtUserPayload: ICognitoUserIn
     return {
         id: v4(),
         aboutUser: '',
-        backgroundPictureUrl: '',
+        backgroundImageUrl: '',
         connections: new Array<IUserConnection>(),
         currentPosition: '',
         dateOfBirth: 0,

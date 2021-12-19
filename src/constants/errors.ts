@@ -13,6 +13,7 @@ export const ERROR_CODES = {
 };
 
 export const ERROR_MESSAGES = {
+    USER_SIGNED_URL_QUERY_PARAM: 'Pass query imageType="display_picture"|"background_image"',
     ACTION_INVALID: 'Action is invalid',
     FORBIDDEN_ACCESS: 'Forbidden Access',
     INCORRECT_UNAME_PASS: 'Incorrect Username or Password',

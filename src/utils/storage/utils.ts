@@ -50,4 +50,14 @@ const getFileFromS3 = (storageFileLocation: string): Promise<PromiseResult<S3.Ge
     return fileStream;
 };
 
-export { uploadFileToS3, deleteFileFromS3, getFileFromS3 };
+const generateUploadURL = async (storageFileLocation: string) => {
+    const generateSignedURLParams = {
+        Bucket: ENV.AWS.S3.BUCKET as string,
+        Key: storageFileLocation,
+        Expires: 20,
+    };
+    const uploadURL = await STORAGE_CLIENT.getSignedUrlPromise('putObject', generateSignedURLParams);
+    return uploadURL;
+};
+
+export { uploadFileToS3, deleteFileFromS3, getFileFromS3, generateUploadURL };

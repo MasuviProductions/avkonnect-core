@@ -65,7 +65,7 @@ const UserPreferenceSchema = new dynamoose.Schema({
 export interface IUser {
     id: string;
     aboutUser: string;
-    backgroundPictureUrl: string;
+    backgroundImageUrl: string;
     connections: Array<IUserConnection>;
     currentPosition: string;
     dateOfBirth: number;
@@ -85,7 +85,7 @@ const UserSchema = new dynamoose.Schema(
     {
         id: { type: String, hashKey: true },
         aboutUser: { type: String },
-        backgroundPictureUrl: { type: String },
+        backgroundImageUrl: { type: String },
         connections: { type: Array, schema: Array.of(UserConnectionScheme) },
         currentPosition: { type: String },
         dateOfBirth: { type: Number, validate: validateIfNumberIsEpoch },
