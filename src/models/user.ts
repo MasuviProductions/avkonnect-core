@@ -5,19 +5,6 @@ import { IDynamooseDocument } from '../interfaces/generic';
 
 const validateIfNumberIsEpoch = (val: ValueType) => typeof val === 'number' && !!new Date(val);
 
-export interface IUserConnection {
-    id: string;
-    isConnected: boolean;
-    isInitiatedByUser: boolean;
-    connectedAt?: number;
-}
-const UserConnectionScheme = new dynamoose.Schema({
-    id: { type: String },
-    isConnected: { type: Boolean },
-    isInitiatedByUser: { type: Boolean },
-    connectedAt: { type: Number, validate: validateIfNumberIsEpoch },
-});
-
 export interface IUserSkill {
     skill: string;
     endorsers?: string[];
@@ -66,14 +53,14 @@ export interface IUser {
     id: string;
     aboutUser: string;
     backgroundImageUrl: string;
-    connections: Array<IUserConnection>;
+    connectionCount: number;
     currentPosition: string;
     dateOfBirth: number;
     displayPictureUrl: string;
     email: string;
     experiences: Array<IUserExperience>;
-    followers: Array<string>;
-    following: Array<string>;
+    followerCount: number;
+    followeeCount: number;
     headline: string;
     name: string;
     phone: string;
@@ -86,14 +73,14 @@ const UserSchema = new dynamoose.Schema(
         id: { type: String, hashKey: true },
         aboutUser: { type: String },
         backgroundImageUrl: { type: String },
-        connections: { type: Array, schema: Array.of(UserConnectionScheme) },
+        connectionCount: { type: Number },
         currentPosition: { type: String },
         dateOfBirth: { type: Number, validate: validateIfNumberIsEpoch },
         displayPictureUrl: { type: String },
         email: { type: String },
         experieces: { type: Array, schema: Array.of(UserExperienceSchema) },
-        followers: { type: Array, schema: Array.of(String) },
-        following: { type: Array, schema: Array.of(String) },
+        followerCount: { type: Number },
+        followeeCount: { type: Number },
         headline: { type: String },
         name: { type: String },
         phone: { type: String },

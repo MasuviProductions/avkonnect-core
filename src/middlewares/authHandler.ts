@@ -3,7 +3,7 @@ import { ERROR_CODES, ERROR_MESSAGES } from '../constants/errors';
 import { IUser } from '../models/user';
 import { getBearerTokenFromApiRequest, getCognitoUserInfo, verfiyAccessToken } from '../utils/auth';
 import { getMinifiedUser, getNewUserModelFromJWTUserPayload } from '../utils/db/helpers';
-import { DBQueries } from '../utils/db/queries';
+import DBQueries from '../utils/db/queries';
 import { HttpError } from '../utils/error';
 import asyncHandler from './asyncHandler';
 

@@ -9,18 +9,18 @@ const userConnectionsRouter = express.Router({ mergeParams: true });
 const userSkillsRouter = express.Router({ mergeParams: true });
 const userSignedURLRouter = express.Router({ mergeParams: true });
 
-USER_ROUTER.use('/:user_id/following', userFollowingRouter);
-USER_ROUTER.use('/:user_id/connections', userConnectionsRouter);
+USER_ROUTER.use('/:user_id/followee', userFollowingRouter);
+USER_ROUTER.use('/:user_id/connectee', userConnectionsRouter);
 USER_ROUTER.use('/:user_id/skills', userSkillsRouter);
 
 USER_ROUTER.use('/:user_id/signedURL', userSignedURLRouter);
 
 userFollowingRouter
-    .route('/:following_id')
+    .route('/:followee_id')
     .post(USER_CONTROLLER.postFollowingForUser)
     .delete(USER_CONTROLLER.deleteFollowingForUser);
 userConnectionsRouter
-    .route('/:connection_id')
+    .route('/:connectee_id')
     .post(USER_CONTROLLER.postCreateConnectionForUser)
     .patch(USER_CONTROLLER.patchConfirmConnectionForUser)
     .delete(USER_CONTROLLER.deleteConnectionForUser);
