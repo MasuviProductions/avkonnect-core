@@ -39,6 +39,7 @@
         "jsonwebtoken": "^8.5.1",
         "jwk-to-pem": "^2.0.5",
         "loglevel": "^1.8.0",
+        "node-cache": "^5.1.2",
         "path-to-regexp": "^6.2.0",
         "serverless-http": "^2.7.0",
         "uuidv4": "^6.2.12"

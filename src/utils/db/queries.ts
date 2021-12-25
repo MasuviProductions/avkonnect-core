@@ -4,10 +4,12 @@ import Follow, { IFollow } from '../../models/follow';
 import User, { IEditableUser, IUser } from '../../models/user';
 import { IFollowResourceValues } from './helpers';
 
-const getUserByEmail = async (email: string): Promise<IUser> => {
+const getAuthUserByEmail = async (email: string): Promise<IUser> => {
     const userDocuments = await User.scan({
         email: email,
-    }).exec();
+    })
+        .attributes(['id', 'email'])
+        .exec();
     return userDocuments[0];
 };
 
@@ -56,7 +58,7 @@ const DBQueries = {
     getConnection,
     createUser,
     getFollow,
-    getUserByEmail,
+    getAuthUserByEmail,
     getUserById,
     updateUser,
     getUserFollowResource,

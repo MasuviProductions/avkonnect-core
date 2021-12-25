@@ -8,7 +8,7 @@ const getAuthUser = async (
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _next: NextFunction
 ) => {
-    const user = req.user;
+    const user = req.authUser;
     const response: HttpResponse = {
         success: true,
         data: user,

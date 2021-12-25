@@ -1,8 +1,8 @@
-import { IMinifiedUser } from '../interfaces/api';
+import { IAuthUser } from '../interfaces/api';
 
 declare module 'express' {
     interface Request {
-        user?: Readonly<IMinifiedUser>;
+        authUser?: Readonly<IAuthUser>;
     }
 }
 export = 'express';

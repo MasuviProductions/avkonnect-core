@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { IMinifiedUser } from '../../interfaces/api';
+import { IAuthUser, IMinifiedUser } from '../../interfaces/api';
 import { ICognitoUserInfoApiResponse } from '../../interfaces/jwt';
 import { IUser, IUserExperience, IUserSkill } from '../../models/user';
 
@@ -36,6 +36,17 @@ export const getMinifiedUser = (user: IUser): IMinifiedUser | undefined => {
         name: user.name,
     };
     return minifiedUser;
+};
+
+export const getAuthUser = (user: IUser): IAuthUser | undefined => {
+    if (!user) {
+        return;
+    }
+    const authUser: IAuthUser = {
+        id: user.id,
+        email: user.email,
+    };
+    return authUser;
 };
 
 export type IFollowResourceValues = 'followerId' | 'followeeId';

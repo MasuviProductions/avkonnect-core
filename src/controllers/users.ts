@@ -17,7 +17,7 @@ const getUserProfile = async (
     _next: NextFunction
 ) => {
     const userId = req.params.user_id;
-    const authUser = req.user;
+    const authUser = req.authUser;
     if (!authUser) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
     }
@@ -41,7 +41,7 @@ const patchUserProfile = async (
     }
     const userId = req.params.user_id;
     const userUpdateDetails: IEditableUser = req.body;
-    const authUser = req.user;
+    const authUser = req.authUser;
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
     }
@@ -61,7 +61,7 @@ const postFollowingForUser = async (
 ) => {
     const userId = req.params.user_id;
     const followeeId = req.params.followee_id;
-    const authUser = req.user;
+    const authUser = req.authUser;
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
     }
@@ -94,7 +94,7 @@ const deleteFollowingForUser = async (
 ) => {
     const userId = req.params.user_id;
     const followeeId = req.params.followee_id;
-    const authUser = req.user;
+    const authUser = req.authUser;
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
     }
@@ -127,7 +127,7 @@ const postCreateConnectionForUser = async (
 ) => {
     const userId = req.params.user_id;
     const connecteeId = req.params.connectee_id;
-    const authUser = req.user;
+    const authUser = req.authUser;
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
     }
@@ -163,7 +163,7 @@ const patchConfirmConnectionForUser = async (
 ) => {
     const userId = req.params.user_id;
     const connecteeId = req.params.connectee_id;
-    const authUser = req.user;
+    const authUser = req.authUser;
     const connectedAt = Date.now();
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
@@ -223,7 +223,7 @@ const deleteConnectionForUser = async (
 ) => {
     const userId = req.params.user_id;
     const connecteeId = req.params.connectee_id;
-    const authUser = req.user;
+    const authUser = req.authUser;
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
     }
@@ -270,7 +270,7 @@ const patchEndorseUserSkill = async (
     _next: NextFunction
 ) => {
     const userId = req.params.user_id;
-    const requestingUser = req.user;
+    const requestingUser = req.authUser;
     const skill = req.body.skill;
     const user = await DBQueries.getUserById(userId);
     const userSkills: IUserSkill[] = user.skills;
@@ -302,7 +302,7 @@ const deleteUnendorseUserSkill = async (
     _next: NextFunction
 ) => {
     const userId = req.params.user_id;
-    const requestingUser = req.user;
+    const requestingUser = req.authUser;
     const skill = req.body.skill;
     const user = await DBQueries.getUserById(userId);
     const userSkills: IUserSkill[] = user.skills;
@@ -337,7 +337,7 @@ const getUserUploadSignedURL = async (
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _next: NextFunction
 ) => {
-    const authUser = req.user;
+    const authUser = req.authUser;
     const userId = req.params.user_id;
     if (!authUser || authUser.id !== userId) {
         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
