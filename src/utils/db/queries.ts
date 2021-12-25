@@ -1,4 +1,6 @@
 import * as dynamoose from 'dynamoose';
+import { v4 } from 'uuid';
+import Skills, { ISkills, ISkillSet } from '../../models/skills';
 import Connection, { IConnection } from '../../models/connection';
 import Follow, { IFollow } from '../../models/follow';
 import User, { IEditableUser, IUser } from '../../models/user';
@@ -30,7 +32,7 @@ const updateUser = async (userId: string, user: IEditableUser): Promise<IUser> =
     return await User.update({ id: userId }, { ...user });
 };
 
-const getUserFollowResource = async (
+const getUserFollowResources = async (
     userId: string,
     queryField: IFollowResourceValues,
     attributeField: IFollowResourceValues
@@ -54,6 +56,24 @@ const getConnection = async (connectorId: string, connecteeId: string): Promise<
     return connections[0];
 };
 
+const createSkills = async (): Promise<ISkills> => {
+    const skills: ISkills = {
+        id: v4(),
+        skillSets: Array<ISkillSet>(),
+    };
+    const skillsObj = new Skills(skills);
+    skillsObj.save();
+    return skills;
+};
+
+const getSkills = async (skillsId: string): Promise<ISkills> => {
+    return await Skills.get({ id: skillsId });
+};
+
+const updateSkills = async (skillsId: string, skillSets: Array<ISkillSet>): Promise<ISkills> => {
+    return await Skills.update({ id: skillsId }, { skillSets: skillSets });
+};
+
 const DBQueries = {
     getConnection,
     createUser,
@@ -61,7 +81,10 @@ const DBQueries = {
     getAuthUserByEmail,
     getUserById,
     updateUser,
-    getUserFollowResource,
+    getUserFollowResources,
+    createSkills,
+    getSkills,
+    updateSkills,
 };
 
 export default DBQueries;

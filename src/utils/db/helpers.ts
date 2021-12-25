@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 import { IAuthUser, IMinifiedUser } from '../../interfaces/api';
 import { ICognitoUserInfoApiResponse } from '../../interfaces/jwt';
-import { IUser, IUserExperience, IUserSkill } from '../../models/user';
+import { IUser, IUserExperience } from '../../models/user';
 
 export const getNewUserModelFromJWTUserPayload = (jwtUserPayload: ICognitoUserInfoApiResponse): IUser => {
     return {
@@ -20,7 +20,7 @@ export const getNewUserModelFromJWTUserPayload = (jwtUserPayload: ICognitoUserIn
         name: jwtUserPayload.name,
         phone: '',
         preferences: { connections: { isPrivate: false } },
-        skills: Array<IUserSkill>(),
+        skillsRefId: '',
     };
 };
 

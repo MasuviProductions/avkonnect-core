@@ -1,5 +1,5 @@
 import express from 'express';
-import { check } from 'express-validator';
+import { body, check } from 'express-validator';
 import USER_CONTROLLER from '../controllers/users';
 import { READABLE_USER_PROPERTIES } from '../models/user';
 
@@ -12,7 +12,6 @@ const userSignedURLRouter = express.Router({ mergeParams: true });
 USER_ROUTER.use('/:user_id/followee', userFollowingRouter);
 USER_ROUTER.use('/:user_id/connectee', userConnectionsRouter);
 USER_ROUTER.use('/:user_id/skills', userSkillsRouter);
-
 USER_ROUTER.use('/:user_id/signedURL', userSignedURLRouter);
 
 userFollowingRouter
@@ -24,10 +23,7 @@ userConnectionsRouter
     .post(USER_CONTROLLER.postCreateConnectionForUser)
     .patch(USER_CONTROLLER.patchConfirmConnectionForUser)
     .delete(USER_CONTROLLER.deleteConnectionForUser);
-userSkillsRouter
-    .route('/')
-    .patch([check('skill').exists()], USER_CONTROLLER.patchEndorseUserSkill)
-    .delete([check('skill').exists()], USER_CONTROLLER.deleteUnendorseUserSkill);
+userSkillsRouter.route('/').patch([body().isArray()], USER_CONTROLLER.patchUserSkill);
 userSignedURLRouter.route('/').get(USER_CONTROLLER.getUserUploadSignedURL);
 
 USER_ROUTER.route('/:user_id')

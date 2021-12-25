@@ -4,16 +4,6 @@ import { TABLE } from '../constants/db';
 import { IDynamooseDocument } from '../interfaces/generic';
 
 const validateIfNumberIsEpoch = (val: ValueType) => typeof val === 'number' && !!new Date(val);
-
-export interface IUserSkill {
-    skill: string;
-    endorsers?: string[];
-}
-const UserSkillSchema = new dynamoose.Schema({
-    skill: { type: String },
-    endorsers: { type: Array, schema: Array.of(String) },
-});
-
 export interface IUserExperience {
     company: string;
     isPresentlyWorking: boolean;
@@ -65,7 +55,7 @@ export interface IUser {
     name: string;
     phone: string;
     preferences: IUserPreference;
-    skills: Array<IUserSkill>;
+    skillsRefId: string;
 }
 // Changes in UserSchemaObj must be updated in IUser
 const UserSchema = new dynamoose.Schema(
@@ -85,7 +75,7 @@ const UserSchema = new dynamoose.Schema(
         name: { type: String },
         phone: { type: String },
         preferences: { type: Object, schema: UserPreferenceSchema },
-        skills: { type: Array, schema: Array.of(UserSkillSchema) },
+        skillsRefId: { type: String },
     },
     {
         timestamps: true,

@@ -6,9 +6,10 @@ import DBQueries from '../utils/db/queries';
 import { HttpError } from '../utils/error';
 import { HttpResponse } from '../interfaces/generic';
 import { validationResult } from 'express-validator';
-import { IEditableUser, IUserSkill } from '../models/user';
+import { IEditableUser } from '../models/user';
 import { generateUploadURL } from '../utils/storage/utils';
 import DBTransactions from '../utils/db/transactions';
+import { ISkillSet } from '../models/skills';
 
 const getUserProfile = async (
     req: Request,
@@ -263,72 +264,21 @@ const deleteConnectionForUser = async (
     return res.status(200).json(response);
 };
 
-const patchEndorseUserSkill = async (
+const patchUserSkills = async (
     req: Request,
     res: Response,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _next: NextFunction
 ) => {
     const userId = req.params.user_id;
-    const requestingUser = req.authUser;
-    const skill = req.body.skill;
+    const skillSets = req.body as Array<ISkillSet>;
     const user = await DBQueries.getUserById(userId);
-    const userSkills: IUserSkill[] = user.skills;
-    const matchedUserSkill = userSkills.find((userSkill) => userSkill.skill === skill);
-    if (!matchedUserSkill) {
-        throw new HttpError(ERROR_MESSAGES.RESOURCE_NOT_FOUND, 404, ERROR_CODES.NOT_FOUND_ERROR);
-    }
-    if (matchedUserSkill.endorsers) {
-        if (matchedUserSkill.endorsers.includes(requestingUser?.id as string)) {
-            throw new HttpError(ERROR_MESSAGES.USER_SKILL_ENDORSED, 400, ERROR_CODES.REDUNDANT_ERROR);
-        }
-    } else {
-        matchedUserSkill.endorsers = Array<string>();
-    }
-    matchedUserSkill.endorsers.push(requestingUser?.id as string);
-    const updatedSkills: IEditableUser = { skills: userSkills };
-    await DBQueries.updateUser(userId, updatedSkills);
+    const updatedSkills = await DBQueries.updateSkills(user.skillsRefId, skillSets);
     const response: HttpResponse = {
         success: true,
-        data: 'success',
+        data: updatedSkills,
     };
     return res.status(200).json(response);
-};
-
-const deleteUnendorseUserSkill = async (
-    req: Request,
-    res: Response,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _next: NextFunction
-) => {
-    const userId = req.params.user_id;
-    const requestingUser = req.authUser;
-    const skill = req.body.skill;
-    const user = await DBQueries.getUserById(userId);
-    const userSkills: IUserSkill[] = user.skills;
-    const matchedUserSkill = userSkills.find((userSkill) => userSkill.skill === skill);
-    if (!matchedUserSkill) {
-        throw new HttpError(ERROR_MESSAGES.RESOURCE_NOT_FOUND, 404, ERROR_CODES.NOT_FOUND_ERROR);
-    }
-    const userEndorsers = matchedUserSkill.endorsers;
-    if (userEndorsers) {
-        const endorserIndex = userEndorsers.findIndex((endorser) => endorser === (requestingUser?.id as string));
-        if (endorserIndex >= 0) {
-            userEndorsers[endorserIndex] = userEndorsers[userEndorsers.length - 1];
-            userEndorsers.pop();
-            const updatedSkills: IEditableUser = { skills: userSkills };
-
-            await DBQueries.updateUser(userId, updatedSkills);
-
-            const response: HttpResponse = {
-                success: true,
-                data: 'success',
-            };
-
-            return res.status(200).json(response);
-        }
-    }
-    throw new HttpError(ERROR_MESSAGES.USER_SKILL_UNENDORSED, 400, ERROR_CODES.REDUNDANT_ERROR);
 };
 
 const getUserUploadSignedURL = async (
@@ -362,8 +312,7 @@ const USER_CONTROLLER = {
     deleteConnectionForUser: asyncHandler(deleteConnectionForUser),
     postFollowingForUser: asyncHandler(postFollowingForUser),
     deleteFollowingForUser: asyncHandler(deleteFollowingForUser),
-    patchEndorseUserSkill: asyncHandler(patchEndorseUserSkill),
-    deleteUnendorseUserSkill: asyncHandler(deleteUnendorseUserSkill),
+    patchUserSkill: asyncHandler(patchUserSkills),
     getUserUploadSignedURL: asyncHandler(getUserUploadSignedURL),
 };
 
