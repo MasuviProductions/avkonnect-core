@@ -10,6 +10,7 @@ import { IEditableUser } from '../models/user';
 import { generateUploadURL } from '../utils/storage/utils';
 import DBTransactions from '../utils/db/transactions';
 import { ISkillSet } from '../models/skills';
+import { getSkillSetWithUserNames } from '../utils/db/transformers';
 
 const getUserProfile = async (
     req: Request,
@@ -274,9 +275,27 @@ const patchUserSkills = async (
     const skillSets = req.body as Array<ISkillSet>;
     const user = await DBQueries.getUserById(userId);
     const updatedSkills = await DBQueries.updateSkills(user.skillsRefId, skillSets);
+    const transformedSkills = await getSkillSetWithUserNames(updatedSkills);
     const response: HttpResponse = {
         success: true,
-        data: updatedSkills,
+        data: transformedSkills,
+    };
+    return res.status(200).json(response);
+};
+
+const getUserSkills = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userId = req.params.user_id;
+    const user = await DBQueries.getUserById(userId);
+    const userSkills = await DBQueries.getSkills(user.skillsRefId);
+    const transformedSkills = await getSkillSetWithUserNames(userSkills);
+    const response: HttpResponse = {
+        success: true,
+        data: transformedSkills,
     };
     return res.status(200).json(response);
 };
@@ -312,6 +331,7 @@ const USER_CONTROLLER = {
     deleteConnectionForUser: asyncHandler(deleteConnectionForUser),
     postFollowingForUser: asyncHandler(postFollowingForUser),
     deleteFollowingForUser: asyncHandler(deleteFollowingForUser),
+    getUserSkills: asyncHandler(getUserSkills),
     patchUserSkill: asyncHandler(patchUserSkills),
     getUserUploadSignedURL: asyncHandler(getUserUploadSignedURL),
 };

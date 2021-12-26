@@ -23,7 +23,10 @@ userConnectionsRouter
     .post(USER_CONTROLLER.postCreateConnectionForUser)
     .patch(USER_CONTROLLER.patchConfirmConnectionForUser)
     .delete(USER_CONTROLLER.deleteConnectionForUser);
-userSkillsRouter.route('/').patch([body().isArray()], USER_CONTROLLER.patchUserSkill);
+userSkillsRouter
+    .route('/')
+    .get(USER_CONTROLLER.getUserSkills)
+    .patch([body().isArray()], USER_CONTROLLER.patchUserSkill);
 userSignedURLRouter.route('/').get(USER_CONTROLLER.getUserUploadSignedURL);
 
 USER_ROUTER.route('/:user_id')

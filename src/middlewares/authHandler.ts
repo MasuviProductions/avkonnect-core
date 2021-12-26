@@ -24,7 +24,6 @@ const authHandler = asyncHandler(async (req: Request, _res: Response, next: Next
             const user = await DBQueries.getAuthUserByEmail(cognitoUserInfo.email);
             if (!user) {
                 const newSkills: ISkills = await DBQueries.createSkills();
-                console.log(newSkills);
                 const newUser: IUser = getNewUserModelFromJWTUserPayload(cognitoUserInfo);
                 newUser.skillsRefId = newSkills.id;
                 const createdUser = (await DBQueries.createUser(newUser)) as IUser;

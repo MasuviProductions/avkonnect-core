@@ -3,6 +3,8 @@ import { TABLE } from '../constants/db';
 import { IDynamooseDocument } from '../interfaces/generic';
 
 export interface ISkillEndorser {
+    // name must not be present in schema
+    name?: string;
     endorserId: string;
     rating: number;
     relationWithUser: string;

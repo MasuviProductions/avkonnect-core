@@ -5,6 +5,7 @@ import Connection, { IConnection } from '../../models/connection';
 import Follow, { IFollow } from '../../models/follow';
 import User, { IEditableUser, IUser } from '../../models/user';
 import { IFollowResourceValues } from './helpers';
+import { IUserRecordObj } from '../../interfaces/api';
 
 const getAuthUserByEmail = async (email: string): Promise<IUser> => {
     const userDocuments = await User.scan({
@@ -20,6 +21,18 @@ const getUserById = async (id: string): Promise<IUser> => {
         id: id,
     });
     return userDocument;
+};
+
+const getUserInfoForIds = async (idList: Set<string>): Promise<Record<string, IUserRecordObj>> => {
+    const usersDocuments = await User.scan(new dynamoose.Condition('id').in(Array.from(idList)))
+        // .attributes(['id', 'name'])
+        .exec();
+    const userObj: Record<string, IUserRecordObj> = {};
+    usersDocuments?.forEach((user) => {
+        console.log(user);
+        userObj[user.id as string] = { name: user.name as string };
+    });
+    return userObj;
 };
 
 const createUser = async (user: IUser): Promise<IUser> => {
@@ -80,6 +93,7 @@ const DBQueries = {
     getFollow,
     getAuthUserByEmail,
     getUserById,
+    getUserInfoForIds,
     updateUser,
     getUserFollowResources,
     createSkills,
