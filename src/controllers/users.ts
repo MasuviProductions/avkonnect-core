@@ -12,6 +12,44 @@ import DBTransactions from '../utils/db/transactions';
 import { ISkillSet } from '../models/skills';
 import { getSkillSetWithUserNames } from '../utils/db/transformers';
 
+const getFolloweesList = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userId = req.params.user_id;
+    const authUser = req.authUser;
+    if (!authUser) {
+        throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+    }
+    const user = await DBQueries.getFolloweesById(userId as string);
+    const response: HttpResponse = {
+        success: true,
+        data: user,
+    };
+    return res.status(200).json(response);
+};
+
+const getFollowersList = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userId = req.params.user_id;
+    const authUser = req.authUser;
+    if (!authUser) {
+        throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+    }
+    const user = await DBQueries.getFollowersById(userId as string);
+    const response: HttpResponse = {
+        success: true,
+        data: user,
+    };
+    return res.status(200).json(response);
+};
+
 const getUserProfile = async (
     req: Request,
     res: Response,
@@ -324,6 +362,8 @@ const getUserUploadSignedURL = async (
 };
 
 const USER_CONTROLLER = {
+    getFolloweesList: asyncHandler(getFolloweesList),
+    getFollowersList: asyncHandler(getFollowersList),
     getUserProfile: asyncHandler(getUserProfile),
     patchUserProfile: asyncHandler(patchUserProfile),
     postCreateConnectionForUser: asyncHandler(postCreateConnectionForUser),

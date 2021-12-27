@@ -7,6 +7,27 @@ import User, { IEditableUser, IUser } from '../../models/user';
 import { IFollowResourceValues } from './helpers';
 import { IUserRecordObj } from '../../interfaces/api';
 
+const getFolloweesById = async (userId: string): Promise<IFollow> => {
+    const followers = await Follow.scan({
+        followeeId: userId,
+    })
+        .attributes(['followerId'])
+        .exec();
+    console.log('data from followers:     ', followers);
+    return followers;
+};
+
+const getFollowersById = async (userId: string): Promise<IFollow> => {
+    console.log('entered here:------------>>>>>>>>>>>>>>>>   ', userId);
+    const followers = await Follow.scan({
+        followerId: userId,
+    })
+        .attributes(['followeeId'])
+        .exec();
+    console.log('data from followers:     ', followers);
+    return followers;
+};
+
 const getAuthUserByEmail = async (email: string): Promise<IUser> => {
     const userDocuments = await User.scan({
         email: email,
@@ -88,6 +109,7 @@ const updateSkills = async (skillsId: string, skillSets: Array<ISkillSet>): Prom
 };
 
 const DBQueries = {
+    getFollowersById,
     getConnection,
     createUser,
     getFollow,
@@ -99,6 +121,7 @@ const DBQueries = {
     createSkills,
     getSkills,
     updateSkills,
+    getFolloweesById,
 };
 
 export default DBQueries;
