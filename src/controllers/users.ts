@@ -10,7 +10,7 @@ import { IEditableUser } from '../models/user';
 import { generateUploadURL } from '../utils/storage/utils';
 import DBTransactions from '../utils/db/transactions';
 import { ISkillSet } from '../models/skills';
-import { getSkillSetWithUserNames } from '../utils/db/transformers';
+import { getSkillSetWithUserNames } from '../utils/transformers';
 
 const getUserProfile = async (
     req: Request,
@@ -323,6 +323,24 @@ const getUserUploadSignedURL = async (
     res.status(200).send(response);
 };
 
+const getUserSearch = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const searchTerm = req.query.search as string;
+    const limit = Number(req.query.limit as string);
+    const dDBAssistStartFromId = req.query.dDBAssistStartFromId as string | undefined;
+    const { users: data, dDBPagination } = await DBQueries.searchUsersByName(searchTerm, limit, dDBAssistStartFromId);
+    const response: HttpResponse = {
+        success: true,
+        data: data,
+        dDBPagination,
+    };
+    return res.status(200).json(response);
+};
+
 const USER_CONTROLLER = {
     getUserProfile: asyncHandler(getUserProfile),
     patchUserProfile: asyncHandler(patchUserProfile),
@@ -334,6 +352,7 @@ const USER_CONTROLLER = {
     getUserSkills: asyncHandler(getUserSkills),
     patchUserSkill: asyncHandler(patchUserSkills),
     getUserUploadSignedURL: asyncHandler(getUserUploadSignedURL),
+    getUserSearch: asyncHandler(getUserSearch),
 };
 
 export default USER_CONTROLLER;

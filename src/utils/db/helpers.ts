@@ -20,6 +20,7 @@ export const getNewUserModelFromJWTUserPayload = (jwtUserPayload: ICognitoUserIn
         name: jwtUserPayload.name,
         phone: '',
         preferences: { connections: { isPrivate: false } },
+        searchFields: { name: jwtUserPayload.name.toLowerCase() },
         skillsRefId: '',
     };
 };

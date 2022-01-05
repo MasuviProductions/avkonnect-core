@@ -5,5 +5,8 @@ export type IMinifiedUser = Readonly<Pick<IUser, 'id' | 'name' | 'dateOfBirth' |
 export type IAuthUser = Readonly<Pick<IUser, 'id' | 'email'>>;
 
 export interface IUserRecordObj {
+    id: string;
     name: string;
+    headline: string;
+    displayPictureUrl: string;
 }

@@ -39,6 +39,13 @@ const UserPreferenceSchema = new dynamoose.Schema({
     connections: { type: Object, schema: UserPreferenceConnectionsScehma },
 });
 
+export interface IUserSearchFields {
+    name: string;
+}
+const UserSearchfieldsSchema = new dynamoose.Schema({
+    name: { type: String },
+});
+
 export interface IUser {
     id: string;
     aboutUser: string;
@@ -55,6 +62,7 @@ export interface IUser {
     name: string;
     phone: string;
     preferences: IUserPreference;
+    searchFields: IUserSearchFields;
     skillsRefId: string;
 }
 // Changes in UserSchemaObj must be updated in IUser
@@ -75,6 +83,7 @@ const UserSchema = new dynamoose.Schema(
         name: { type: String },
         phone: { type: String },
         preferences: { type: Object, schema: UserPreferenceSchema },
+        searchFields: { type: Object, schema: UserSearchfieldsSchema },
         skillsRefId: { type: String },
     },
     {

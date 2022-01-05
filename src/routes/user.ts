@@ -40,4 +40,6 @@ USER_ROUTER.route('/:user_id')
         USER_CONTROLLER.patchUserProfile
     );
 
+USER_ROUTER.route('/').get(USER_CONTROLLER.getUserSearch);
+
 export default USER_ROUTER;
