@@ -4,8 +4,7 @@ import Skills, { ISkills, ISkillSet } from '../../models/skills';
 import Connection, { IConnection } from '../../models/connection';
 import Follow, { IFollow } from '../../models/follow';
 import User, { IEditableUser, IUser } from '../../models/user';
-import { IFollowResourceValues } from './helpers';
-import { ObjectType } from 'dynamoose/dist/General';
+import { fetchDDBPaginatedDocuments, IFollowResourceValues } from './helpers';
 import { HttpDDBResponsePagination } from '../../interfaces/generic';
 
 const getAuthUserByEmail = async (email: string): Promise<IUser> => {
@@ -31,75 +30,21 @@ const getUserInfoForIds = async (idList: Set<string>): Promise<Array<Partial<IUs
     return usersDocuments as Array<Partial<IUser>>;
 };
 
-const DYNAMODB_USER_SEARCH_SCAN_LIMIT = 15;
-
-// const getUsers = async (cb: () => void) => {
-// const scanUser = User.scan(
-//     new dynamoose.Condition().filter('searchFields.name').beginsWith(decodeURI(searchString.toLowerCase()))
-// ).consistent();
-// if (startSearchFromId) {
-//     scanUser.startAt(startSearchFromId);
-// }
-// const searchedUsers = await scanUser
-//     .limit(DYNAMODB_USER_SEARCH_SCAN_LIMIT)
-//     .attributes(['id', 'name', 'headline', 'displayPictureUrl'])
-//     .exec();
-// startSearchFromId = searchedUsers.lastKey;
-// (searchedUsers as Array<Partial<IUser>>).forEach((searchedUser) => {
-//     users.push(searchedUser);
-// });
-
-//     await cb();
-// };
-
-// const functionHandler = async () => {
-//     if (users.length >= limit || !startSearchKey) {
-//         console.log('Terminate');
-//     } else {
-//         await getUsers(functionHandler);
-//     }
-// };
-
-// await getUsers(functionHandler);
-
 const searchUsersByName = async (
     searchString: string,
     limit: number,
     dDBAssistStartFromId?: string
 ): Promise<{ users: Array<Partial<IUser>>; dDBPagination: HttpDDBResponsePagination }> => {
-    let startSearchFromId: ObjectType | undefined = dDBAssistStartFromId ? { id: dDBAssistStartFromId } : undefined;
-    let users: Array<Partial<IUser>> = [];
-    const fetchSearchUsers = async () => {
-        do {
-            const scanUser = User.scan(
-                new dynamoose.Condition().filter('searchFields.name').beginsWith(decodeURI(searchString.toLowerCase()))
-            ).consistent();
-            if (startSearchFromId) {
-                scanUser.startAt(startSearchFromId);
-            }
-            const searchedUsers = await scanUser
-                .limit(DYNAMODB_USER_SEARCH_SCAN_LIMIT)
-                .attributes(['id', 'name', 'headline', 'displayPictureUrl'])
-                .exec();
-            startSearchFromId = searchedUsers.lastKey;
-            (searchedUsers as Array<Partial<IUser>>).forEach((searchedUser) => {
-                users.push(searchedUser);
-            });
-        } while (users.length < limit && startSearchFromId);
-        return users;
-    };
-    await fetchSearchUsers();
-
-    let nextSearchStartFromId: string | undefined = startSearchFromId?.id;
-    if (limit < users.length) {
-        users = [...users.slice(0, limit)];
-        nextSearchStartFromId = users?.[users.length - 1]?.id as string;
-    }
-    const dDBPagination: HttpDDBResponsePagination = {
-        nextSearchStartFromId,
-        count: users.length,
-    };
-    return { users, dDBPagination };
+    const scanInitialUser = User.scan(
+        new dynamoose.Condition().filter('searchFields.name').beginsWith(decodeURI(searchString.toLowerCase()))
+    );
+    const { documents, dDBPagination } = await fetchDDBPaginatedDocuments<IUser>(
+        scanInitialUser,
+        ['id', 'name', 'headline', 'displayPictureUrl'],
+        limit,
+        dDBAssistStartFromId
+    );
+    return { users: documents, dDBPagination };
 };
 
 const createUser = async (user: IUser): Promise<IUser> => {
