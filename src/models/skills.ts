@@ -31,7 +31,7 @@ export interface ISkills {
     id: string;
     skillSets: Array<ISkillSet>;
 }
-// Changes in SkillsSchemaObj must be updated in ISkills
+// Changes in SkillsSchema must be updated in ISkills
 const SkillsSchema = new dynamoose.Schema(
     {
         id: { type: String, hashKey: true },

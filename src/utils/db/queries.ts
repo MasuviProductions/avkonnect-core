@@ -6,6 +6,7 @@ import Follow, { IFollow } from '../../models/follow';
 import User, { IEditableUser, IUser } from '../../models/user';
 import { fetchDDBPaginatedDocuments, IFollowResourceValues } from './helpers';
 import { HttpDDBResponsePagination } from '../../interfaces/generic';
+import Projects, { IProject, IProjects } from '../../models/projects';
 
 const getAuthUserByEmail = async (email: string): Promise<IUser> => {
     const userDocuments = await User.scan({
@@ -99,6 +100,24 @@ const updateSkills = async (skillsId: string, skillSets: Array<ISkillSet>): Prom
     return await Skills.update({ id: skillsId }, { skillSets: skillSets });
 };
 
+const createProjects = async (): Promise<IProjects> => {
+    const projects: IProjects = {
+        id: v4(),
+        projects: Array<IProject>(),
+    };
+    const projectsObj = new Projects(projects);
+    projectsObj.save();
+    return projects;
+};
+
+const getProjects = async (projectsId: string): Promise<IProjects> => {
+    return await Projects.get({ id: projectsId });
+};
+
+const updateProjects = async (projectsId: string, projects: Array<IProject>): Promise<IProjects> => {
+    return await Projects.update({ id: projectsId }, { projects: projects });
+};
+
 const DBQueries = {
     getConnection,
     createUser,
@@ -112,6 +131,9 @@ const DBQueries = {
     getSkills,
     updateSkills,
     searchUsersByName,
+    createProjects,
+    getProjects,
+    updateProjects,
 };
 
 export default DBQueries;

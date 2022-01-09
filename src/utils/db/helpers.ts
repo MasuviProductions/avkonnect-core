@@ -6,8 +6,15 @@ import { IDynamooseDocument } from '../../interfaces/generic';
 import { IAuthUser, IMinifiedUser } from '../../interfaces/api';
 import { ICognitoUserInfoApiResponse } from '../../interfaces/jwt';
 import { IUser, IUserExperience } from '../../models/user';
+import DBQueries from './queries';
+import { IProjects } from '../../models/projects';
+import { ISkills } from '../../models/skills';
 
-export const getNewUserModelFromJWTUserPayload = (jwtUserPayload: ICognitoUserInfoApiResponse): IUser => {
+export const getNewUserModelFromJWTUserPayload = async (
+    jwtUserPayload: ICognitoUserInfoApiResponse
+): Promise<IUser> => {
+    const newSkills: ISkills = await DBQueries.createSkills();
+    const newProjects: IProjects = await DBQueries.createProjects();
     return {
         id: v4(),
         aboutUser: '',
@@ -24,8 +31,9 @@ export const getNewUserModelFromJWTUserPayload = (jwtUserPayload: ICognitoUserIn
         name: jwtUserPayload.name,
         phone: '',
         preferences: { connections: { isPrivate: false } },
+        projectsRefId: newProjects.id,
         searchFields: { name: jwtUserPayload.name.toLowerCase() },
-        skillsRefId: '',
+        skillsRefId: newSkills.id,
     };
 };
 

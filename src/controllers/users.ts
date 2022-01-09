@@ -11,6 +11,7 @@ import { generateUploadURL } from '../utils/storage/utils';
 import DBTransactions from '../utils/db/transactions';
 import { ISkillSet } from '../models/skills';
 import { getSkillSetWithUserNames } from '../utils/transformers';
+import { IProject } from '../models/projects';
 
 const getUserProfile = async (
     req: Request,
@@ -265,7 +266,24 @@ const deleteConnectionForUser = async (
     return res.status(200).json(response);
 };
 
-const patchUserSkills = async (
+const getUserSkills = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userId = req.params.user_id;
+    const user = await DBQueries.getUserById(userId);
+    const userSkills = await DBQueries.getSkills(user.skillsRefId);
+    const transformedSkills = await getSkillSetWithUserNames(userSkills);
+    const response: HttpResponse = {
+        success: true,
+        data: transformedSkills,
+    };
+    return res.status(200).json(response);
+};
+
+const putUserSkills = async (
     req: Request,
     res: Response,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -283,7 +301,7 @@ const patchUserSkills = async (
     return res.status(200).json(response);
 };
 
-const getUserSkills = async (
+const getUserProjects = async (
     req: Request,
     res: Response,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -291,11 +309,27 @@ const getUserSkills = async (
 ) => {
     const userId = req.params.user_id;
     const user = await DBQueries.getUserById(userId);
-    const userSkills = await DBQueries.getSkills(user.skillsRefId);
-    const transformedSkills = await getSkillSetWithUserNames(userSkills);
+    const userProjcts = await DBQueries.getProjects(user.projectsRefId);
     const response: HttpResponse = {
         success: true,
-        data: transformedSkills,
+        data: userProjcts,
+    };
+    return res.status(200).json(response);
+};
+
+const putUserProjects = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userId = req.params.user_id;
+    const projects = req.body as Array<IProject>;
+    const user = await DBQueries.getUserById(userId);
+    const updatedProjects = await DBQueries.updateProjects(user.projectsRefId, projects);
+    const response: HttpResponse = {
+        success: true,
+        data: updatedProjects,
     };
     return res.status(200).json(response);
 };
@@ -350,9 +384,11 @@ const USER_CONTROLLER = {
     postFollowingForUser: asyncHandler(postFollowingForUser),
     deleteFollowingForUser: asyncHandler(deleteFollowingForUser),
     getUserSkills: asyncHandler(getUserSkills),
-    patchUserSkill: asyncHandler(patchUserSkills),
+    putUserSkills: asyncHandler(putUserSkills),
     getUserUploadSignedURL: asyncHandler(getUserUploadSignedURL),
     getUserSearch: asyncHandler(getUserSearch),
+    getUserProjects: asyncHandler(getUserProjects),
+    putUserProjects: asyncHandler(putUserProjects),
 };
 
 export default USER_CONTROLLER;

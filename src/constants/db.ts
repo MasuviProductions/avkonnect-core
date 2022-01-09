@@ -3,4 +3,5 @@ export enum TABLE {
     Follows = 'avc-follows',
     Users = 'avc-users',
     Skills = 'avc-skills',
+    Projects = 'avc-projects',
 }

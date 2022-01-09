@@ -3,7 +3,6 @@ import NodeCache from 'node-cache';
 import { IAuthUser } from '../interfaces/api';
 import { ERROR_CODES, ERROR_MESSAGES } from '../constants/errors';
 import { IUser } from '../models/user';
-import { ISkills } from '../models/skills';
 import { getBearerTokenFromApiRequest, getCognitoUserInfo, verfiyAccessToken } from '../utils/auth';
 import { getAuthUser, getNewUserModelFromJWTUserPayload } from '../utils/db/helpers';
 import DBQueries from '../utils/db/queries';
@@ -23,9 +22,7 @@ const authHandler = asyncHandler(async (req: Request, _res: Response, next: Next
             // TODO: Merge user in cognito  pool
             const user = await DBQueries.getAuthUserByEmail(cognitoUserInfo.email);
             if (!user) {
-                const newSkills: ISkills = await DBQueries.createSkills();
-                const newUser: IUser = getNewUserModelFromJWTUserPayload(cognitoUserInfo);
-                newUser.skillsRefId = newSkills.id;
+                const newUser: IUser = await getNewUserModelFromJWTUserPayload(cognitoUserInfo);
                 const createdUser = (await DBQueries.createUser(newUser)) as IUser;
                 authUser = createdUser;
             } else {
