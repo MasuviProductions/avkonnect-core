@@ -7,6 +7,7 @@ import User, { IEditableUser, IUser } from '../../models/user';
 import { fetchDDBPaginatedDocuments, IFollowResourceValues } from './helpers';
 import { HttpDDBResponsePagination } from '../../interfaces/generic';
 import Projects, { IProject, IProjects } from '../../models/projects';
+import Experience, { IExperience, IExperiences } from '../../models/experience';
 
 const getAuthUserByEmail = async (email: string): Promise<IUser> => {
     const userDocuments = await User.scan({
@@ -110,6 +111,14 @@ const createProjects = async (): Promise<IProjects> => {
     return projects;
 };
 
+const getExperience = async (experiencesId: string): Promise<IExperiences> => {
+    return await Experience.get({ id: experiencesId });
+};
+
+const updateExperience = async (experiencesId: string, experiences: Array<IExperience>): Promise<IExperiences> => {
+    return await Experience.update({ id: experiencesId }, { experiences: experiences });
+};
+
 const getProjects = async (projectsId: string): Promise<IProjects> => {
     return await Projects.get({ id: projectsId });
 };
@@ -133,6 +142,8 @@ const DBQueries = {
     searchUsersByName,
     createProjects,
     getProjects,
+    updateExperience,
+    getExperience,
     updateProjects,
 };
 

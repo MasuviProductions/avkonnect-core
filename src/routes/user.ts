@@ -9,12 +9,14 @@ const userConnectionsRouter = express.Router({ mergeParams: true });
 const userSkillsRouter = express.Router({ mergeParams: true });
 const userProjectsRouter = express.Router({ mergeParams: true });
 const userSignedURLRouter = express.Router({ mergeParams: true });
+const userExperienceRouter = express.Router({ mergeParams: true });
 
 USER_ROUTER.use('/:user_id/followee', userFollowingRouter);
 USER_ROUTER.use('/:user_id/connectee', userConnectionsRouter);
 USER_ROUTER.use('/:user_id/skills', userSkillsRouter);
 USER_ROUTER.use('/:user_id/projects', userProjectsRouter);
 USER_ROUTER.use('/:user_id/signedURL', userSignedURLRouter);
+USER_ROUTER.use('/:user_id/experience', userExperienceRouter);
 
 userFollowingRouter
     .route('/:followee_id')
@@ -30,6 +32,12 @@ userProjectsRouter
     .route('/')
     .get(USER_CONTROLLER.getUserProjects)
     .put([body().isArray()], USER_CONTROLLER.putUserProjects);
+
+userExperienceRouter
+    .route('/')
+    .get(USER_CONTROLLER.getUserExperience)
+    .put([body().isArray()], USER_CONTROLLER.putUserExperience);
+
 userSignedURLRouter.route('/').get(USER_CONTROLLER.getUserUploadSignedURL);
 
 USER_ROUTER.route('/:user_id')
