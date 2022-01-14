@@ -87,7 +87,7 @@ const UserSchema = new dynamoose.Schema(
         phone: { type: String },
         // userLocation: { type: String },
         projectsRefId: { type: String },
-        experienceRefId: { type: String },
+        experienceRefId: { type: String }, //we might need this in the future need to check when and why
         preferences: { type: Object, schema: UserPreferenceSchema },
         searchFields: { type: Object, schema: UserSearchfieldsSchema },
         skillsRefId: { type: String },

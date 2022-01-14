@@ -88,9 +88,21 @@ const createSkills = async (): Promise<ISkills> => {
         id: v4(),
         skillSets: Array<ISkillSet>(),
     };
+    console.log('skills created');
     const skillsObj = new Skills(skills);
     skillsObj.save();
     return skills;
+};
+
+const createExperiences = async (): Promise<IExperiences> => {
+    console.log('--------------------created experience-----------------');
+    const experiences: IExperiences = {
+        id: v4(),
+        experiences: Array<IExperience>(),
+    };
+    const experieceObj = new Experience(experiences);
+    experieceObj.save();
+    return experiences;
 };
 
 const getSkills = async (skillsId: string): Promise<ISkills> => {
@@ -144,6 +156,7 @@ const DBQueries = {
     getProjects,
     updateExperience,
     getExperience,
+    createExperiences,
     updateProjects,
 };
 

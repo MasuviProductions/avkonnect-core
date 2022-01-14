@@ -327,6 +327,7 @@ const putUserExperience = async (
     const userId = req.params.user_id;
     const experiences = req.body as Array<IExperience>;
     const user = await DBQueries.getUserById(userId);
+    console.log('-----------------got the user--------------', typeof user);
     const updatedExperiences = await DBQueries.updateExperience(user.experienceRefId, experiences);
     const response: HttpResponse = {
         success: true,
