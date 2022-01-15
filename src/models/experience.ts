@@ -34,6 +34,6 @@ const ExperiencesSchema = new dynamoose.Schema(
         timestamps: true,
     }
 );
-const Experience = dynamoose.model<IDynamooseDocument<IExperiences>>(TABLE.Experiences, ExperiencesSchema);
+const Experiences = dynamoose.model<IDynamooseDocument<IExperiences>>(TABLE.Experiences, ExperiencesSchema);
 
-export default Experience;
+export default Experiences;

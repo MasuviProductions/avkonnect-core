@@ -7,7 +7,7 @@ import User, { IEditableUser, IUser } from '../../models/user';
 import { fetchDDBPaginatedDocuments, IFollowResourceValues } from './helpers';
 import { HttpDDBResponsePagination } from '../../interfaces/generic';
 import Projects, { IProject, IProjects } from '../../models/projects';
-import Experience, { IExperience, IExperiences } from '../../models/experience';
+import Experiences, { IExperience, IExperiences } from '../../models/experience';
 
 const getAuthUserByEmail = async (email: string): Promise<IUser> => {
     const userDocuments = await User.scan({
@@ -98,8 +98,8 @@ const createExperiences = async (): Promise<IExperiences> => {
         id: v4(),
         experiences: Array<IExperience>(),
     };
-    const experieceObj = new Experience(experiences);
-    experieceObj.save();
+    const experienceObj = new Experiences(experiences);
+    experienceObj.save();
     return experiences;
 };
 
@@ -122,11 +122,11 @@ const createProjects = async (): Promise<IProjects> => {
 };
 
 const getExperiences = async (experiencesId: string): Promise<IExperiences> => {
-    return await Experience.get({ id: experiencesId });
+    return await Experiences.get({ id: experiencesId });
 };
 
 const updateExperiences = async (experiencesId: string, experiences: Array<IExperience>): Promise<IExperiences> => {
-    return await Experience.update({ id: experiencesId }, { experiences: experiences });
+    return await Experiences.update({ id: experiencesId }, { experiences: experiences });
 };
 
 const getProjects = async (projectsId: string): Promise<IProjects> => {

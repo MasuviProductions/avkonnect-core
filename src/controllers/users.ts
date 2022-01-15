@@ -310,7 +310,7 @@ const getUserExperiences = async (
 ) => {
     const userId = req.params.user_id;
     const user = await DBQueries.getUserById(userId);
-    const userExperience = await DBQueries.getExperiences(user.experienceRefId);
+    const userExperience = await DBQueries.getExperiences(user.experiencesRefId);
     const response: HttpResponse = {
         success: true,
         data: userExperience,
@@ -327,7 +327,7 @@ const putUserExperiences = async (
     const userId = req.params.user_id;
     const experiences = req.body as Array<IExperience>;
     const user = await DBQueries.getUserById(userId);
-    const updatedExperiences = await DBQueries.updateExperiences(user.experienceRefId, experiences);
+    const updatedExperiences = await DBQueries.updateExperiences(user.experiencesRefId, experiences);
     const response: HttpResponse = {
         success: true,
         data: updatedExperiences,
