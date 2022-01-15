@@ -302,7 +302,7 @@ const putUserSkills = async (
     return res.status(200).json(response);
 };
 
-const getUserExperience = async (
+const getUserExperiences = async (
     req: Request,
     res: Response,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -310,7 +310,7 @@ const getUserExperience = async (
 ) => {
     const userId = req.params.user_id;
     const user = await DBQueries.getUserById(userId);
-    const userExperience = await DBQueries.getExperience(user.experienceRefId);
+    const userExperience = await DBQueries.getExperiences(user.experienceRefId);
     const response: HttpResponse = {
         success: true,
         data: userExperience,
@@ -318,7 +318,7 @@ const getUserExperience = async (
     return res.status(200).json(response);
 };
 
-const putUserExperience = async (
+const putUserExperiences = async (
     req: Request,
     res: Response,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -327,8 +327,7 @@ const putUserExperience = async (
     const userId = req.params.user_id;
     const experiences = req.body as Array<IExperience>;
     const user = await DBQueries.getUserById(userId);
-    console.log('-----------------got the user--------------', typeof user);
-    const updatedExperiences = await DBQueries.updateExperience(user.experienceRefId, experiences);
+    const updatedExperiences = await DBQueries.updateExperiences(user.experienceRefId, experiences);
     const response: HttpResponse = {
         success: true,
         data: updatedExperiences,
@@ -424,8 +423,8 @@ const USER_CONTROLLER = {
     getUserSearch: asyncHandler(getUserSearch),
     getUserProjects: asyncHandler(getUserProjects),
     putUserProjects: asyncHandler(putUserProjects),
-    getUserExperience: asyncHandler(getUserExperience),
-    putUserExperience: asyncHandler(putUserExperience),
+    getUserExperiences: asyncHandler(getUserExperiences),
+    putUserExperiences: asyncHandler(putUserExperiences),
 };
 
 export default USER_CONTROLLER;

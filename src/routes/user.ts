@@ -35,8 +35,8 @@ userProjectsRouter
 
 userExperienceRouter
     .route('/')
-    .get(USER_CONTROLLER.getUserExperience)
-    .put([body().isArray()], USER_CONTROLLER.putUserExperience);
+    .get(USER_CONTROLLER.getUserExperiences)
+    .put([body().isArray()], USER_CONTROLLER.putUserExperiences);
 
 userSignedURLRouter.route('/').get(USER_CONTROLLER.getUserUploadSignedURL);
 
