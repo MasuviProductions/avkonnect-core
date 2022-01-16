@@ -1,4 +1,5 @@
 import * as dynamoose from 'dynamoose';
+import { IUserAvatar } from '../interfaces/api';
 import { TABLE } from '../constants/db';
 import { IDynamooseDocument } from '../interfaces/generic';
 
@@ -12,6 +13,8 @@ export interface IProject {
     name: string;
     role: string;
     startDate: number;
+    // Below properties must not be present in schema
+    collaborators?: Array<IUserAvatar>;
 }
 const ProjectSchema = new dynamoose.Schema({
     companyName: { type: String },

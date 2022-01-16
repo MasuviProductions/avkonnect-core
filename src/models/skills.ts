@@ -1,16 +1,13 @@
 import * as dynamoose from 'dynamoose';
+import { IUserAvatar } from '../interfaces/api';
 import { TABLE } from '../constants/db';
 import { IDynamooseDocument } from '../interfaces/generic';
 
-export interface ISkillEndorser {
+// Extended properties must not be present in schema
+export interface ISkillEndorser extends Partial<IUserAvatar> {
     endorserId: string;
     rating: number;
     relationWithUser: string;
-    // below properties must not be present in schema
-    id?: string;
-    name?: string;
-    displayPictureUrl?: string;
-    headline?: string;
 }
 const SkillEndorser = new dynamoose.Schema({
     endorserId: { type: String },

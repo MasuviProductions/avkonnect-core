@@ -10,7 +10,7 @@ import { IEditableUser } from '../models/user';
 import { generateUploadURL } from '../utils/storage/utils';
 import DBTransactions from '../utils/db/transactions';
 import { ISkillSet } from '../models/skills';
-import { getSkillSetWithUserNames } from '../utils/transformers';
+import { getExpandedProjectCollaborators, getExpandedUserSkillSetEndorsers } from '../utils/transformers';
 import { IProject } from '../models/projects';
 
 const getUserProfile = async (
@@ -275,7 +275,7 @@ const getUserSkills = async (
     const userId = req.params.user_id;
     const user = await DBQueries.getUserById(userId);
     const userSkills = await DBQueries.getSkills(user.skillsRefId);
-    const transformedSkills = await getSkillSetWithUserNames(userSkills);
+    const transformedSkills = await getExpandedUserSkillSetEndorsers(userSkills);
     const response: HttpResponse = {
         success: true,
         data: transformedSkills,
@@ -293,7 +293,7 @@ const putUserSkills = async (
     const skillSets = req.body as Array<ISkillSet>;
     const user = await DBQueries.getUserById(userId);
     const updatedSkills = await DBQueries.updateSkills(user.skillsRefId, skillSets);
-    const transformedSkills = await getSkillSetWithUserNames(updatedSkills);
+    const transformedSkills = await getExpandedUserSkillSetEndorsers(updatedSkills);
     const response: HttpResponse = {
         success: true,
         data: transformedSkills,
@@ -309,10 +309,11 @@ const getUserProjects = async (
 ) => {
     const userId = req.params.user_id;
     const user = await DBQueries.getUserById(userId);
-    const userProjcts = await DBQueries.getProjects(user.projectsRefId);
+    const userProjects = await DBQueries.getProjects(user.projectsRefId);
+    const transformedProjects = await getExpandedProjectCollaborators(userProjects);
     const response: HttpResponse = {
         success: true,
-        data: userProjcts,
+        data: transformedProjects,
     };
     return res.status(200).json(response);
 };
@@ -327,9 +328,10 @@ const putUserProjects = async (
     const projects = req.body as Array<IProject>;
     const user = await DBQueries.getUserById(userId);
     const updatedProjects = await DBQueries.updateProjects(user.projectsRefId, projects);
+    const transformedProjects = await getExpandedProjectCollaborators(updatedProjects);
     const response: HttpResponse = {
         success: true,
-        data: updatedProjects,
+        data: transformedProjects,
     };
     return res.status(200).json(response);
 };

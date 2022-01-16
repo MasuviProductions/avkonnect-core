@@ -1,9 +1,10 @@
 import { IUser } from '../models/user';
-import { IUserRecordObj } from '../interfaces/api';
+import { IUserAvatar } from '../interfaces/api';
 import { ISkills } from '../models/skills';
 import DBQueries from './db/queries';
+import { IProjects } from '../models/projects';
 
-export const getSkillSetWithUserNames = async (userSkills: ISkills): Promise<ISkills> => {
+export const getExpandedUserSkillSetEndorsers = async (userSkills: ISkills): Promise<ISkills> => {
     const endorsersList = new Set<string>();
     userSkills.skillSets.forEach((skillSet) =>
         skillSet.endorsers.forEach((endorser) => {
@@ -24,14 +25,36 @@ export const getSkillSetWithUserNames = async (userSkills: ISkills): Promise<ISk
     return userSkills;
 };
 
-export const getUserInfoInKeyValuePairs = (users: Array<Partial<IUser>>): Record<string, IUserRecordObj> => {
-    const userObj: Record<string, IUserRecordObj> = {};
+export const getExpandedProjectCollaborators = async (userProjcts: IProjects): Promise<IProjects> => {
+    const collaboratorsList = new Set<string>();
+    userProjcts.projects.forEach((project) =>
+        project.collaboratorsRefs.forEach((collaboratorId) => {
+            collaboratorsList.add(collaboratorId);
+        })
+    );
+    if (collaboratorsList.size > 0) {
+        const userList = await DBQueries.getUserInfoForIds(collaboratorsList);
+        const collaboratorsInfo = getUserInfoInKeyValuePairs(userList);
+        userProjcts.projects.forEach((project) => {
+            project.collaborators = [];
+
+            project.collaboratorsRefs.forEach((collaboratorId) => {
+                project.collaborators?.push(collaboratorsInfo[collaboratorId]);
+            });
+        });
+    }
+    return userProjcts;
+};
+
+export const getUserInfoInKeyValuePairs = (users: Array<Partial<IUser>>): Record<string, IUserAvatar> => {
+    const userObj: Record<string, IUserAvatar> = {};
     users?.forEach((user) => {
         userObj[user.id as string] = {
             id: user.id as string,
             name: user.name as string,
             headline: user.headline || '',
             displayPictureUrl: user.displayPictureUrl || '',
+            email: user.email as string,
         };
     });
     return userObj;
