@@ -2,42 +2,38 @@ import * as dynamoose from 'dynamoose';
 import { TABLE } from '../constants/db';
 import { IDynamooseDocument } from '../interfaces/generic';
 
-export interface IProject {
+export interface IExperience {
     companyName: string;
-    collaboratorsRefs: Array<string>;
     description: string;
     employmentType: string;
     endDate: number;
     industry: string;
-    name: string;
     role: string;
     startDate: number;
 }
-const ProjectSchema = new dynamoose.Schema({
+const ExperienceSchema = new dynamoose.Schema({
     companyName: { type: String },
-    collaboratorsRefs: { type: Array, schema: Array.of(String) },
     description: { type: String },
     employmentType: { type: String }, //TODO:declare enum
     endDate: { type: Number },
     industry: { type: String }, //TODO:declare enum
-    name: { type: String },
     role: { type: String },
     startDate: { type: Number },
 });
-export interface IProjects {
+export interface IExperiences {
     id: string;
-    projects: Array<IProject>;
+    experiences: Array<IExperience>;
 }
-// Changes in ProjectsSchema must be updated in IProjects
-const ProjectsSchema = new dynamoose.Schema(
+// Changes in ExperiencesSchema must be updated in IExperiences
+const ExperiencesSchema = new dynamoose.Schema(
     {
         id: { type: String, hashKey: true },
-        projects: { type: Array, schema: Array.of(ProjectSchema) },
+        experiences: { type: Array, schema: Array.of(ExperienceSchema) },
     },
     {
         timestamps: true,
     }
 );
-const Projects = dynamoose.model<IDynamooseDocument<IProjects>>(TABLE.Projects, ProjectsSchema);
+const Experiences = dynamoose.model<IDynamooseDocument<IExperiences>>(TABLE.Experiences, ExperiencesSchema);
 
-export default Projects;
+export default Experiences;

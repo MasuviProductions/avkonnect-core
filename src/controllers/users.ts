@@ -12,6 +12,7 @@ import DBTransactions from '../utils/db/transactions';
 import { ISkillSet } from '../models/skills';
 import { getSkillSetWithUserNames } from '../utils/transformers';
 import { IProject } from '../models/projects';
+import { IExperience } from '../models/experience';
 
 const getUserProfile = async (
     req: Request,
@@ -301,6 +302,39 @@ const putUserSkills = async (
     return res.status(200).json(response);
 };
 
+const getUserExperiences = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userId = req.params.user_id;
+    const user = await DBQueries.getUserById(userId);
+    const userExperience = await DBQueries.getExperiences(user.experiencesRefId);
+    const response: HttpResponse = {
+        success: true,
+        data: userExperience,
+    };
+    return res.status(200).json(response);
+};
+
+const putUserExperiences = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userId = req.params.user_id;
+    const experiences = req.body as Array<IExperience>;
+    const user = await DBQueries.getUserById(userId);
+    const updatedExperiences = await DBQueries.updateExperiences(user.experiencesRefId, experiences);
+    const response: HttpResponse = {
+        success: true,
+        data: updatedExperiences,
+    };
+    return res.status(200).json(response);
+};
+
 const getUserProjects = async (
     req: Request,
     res: Response,
@@ -389,6 +423,8 @@ const USER_CONTROLLER = {
     getUserSearch: asyncHandler(getUserSearch),
     getUserProjects: asyncHandler(getUserProjects),
     putUserProjects: asyncHandler(putUserProjects),
+    getUserExperiences: asyncHandler(getUserExperiences),
+    putUserExperiences: asyncHandler(putUserExperiences),
 };
 
 export default USER_CONTROLLER;
