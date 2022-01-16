@@ -63,6 +63,7 @@ export interface IUser {
     phone: string;
     preferences: IUserPreference;
     projectsRefId: string;
+    experiencesRefId: string;
     searchFields: IUserSearchFields;
     skillsRefId: string;
 }
@@ -84,6 +85,7 @@ const UserSchema = new dynamoose.Schema(
         name: { type: String },
         phone: { type: String },
         projectsRefId: { type: String },
+        experiencesRefId: { type: String },
         preferences: { type: Object, schema: UserPreferenceSchema },
         searchFields: { type: Object, schema: UserSearchfieldsSchema },
         skillsRefId: { type: String },

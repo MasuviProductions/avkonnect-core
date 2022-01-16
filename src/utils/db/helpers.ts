@@ -9,10 +9,12 @@ import { IUser, IUserExperience } from '../../models/user';
 import DBQueries from './queries';
 import { IProjects } from '../../models/projects';
 import { ISkills } from '../../models/skills';
+import { IExperiences } from '../../models/experience';
 
 export const getNewUserModelFromJWTUserPayload = async (
     jwtUserPayload: ICognitoUserInfoApiResponse
 ): Promise<IUser> => {
+    const newExperience: IExperiences = await DBQueries.createExperiences();
     const newSkills: ISkills = await DBQueries.createSkills();
     const newProjects: IProjects = await DBQueries.createProjects();
     return {
@@ -34,6 +36,7 @@ export const getNewUserModelFromJWTUserPayload = async (
         projectsRefId: newProjects.id,
         searchFields: { name: jwtUserPayload.name.toLowerCase() },
         skillsRefId: newSkills.id,
+        experiencesRefId: newExperience.id,
     };
 };
 

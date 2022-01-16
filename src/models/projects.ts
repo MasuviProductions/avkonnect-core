@@ -20,9 +20,9 @@ const ProjectSchema = new dynamoose.Schema({
     companyName: { type: String },
     collaboratorsRefs: { type: Array, schema: Array.of(String) },
     description: { type: String },
-    employmentType: { type: String },
+    employmentType: { type: String }, //TODO:declare enum
     endDate: { type: Number },
-    industry: { type: String },
+    industry: { type: String }, //TODO:declare enum
     name: { type: String },
     role: { type: String },
     startDate: { type: Number },
