@@ -13,6 +13,7 @@ import { ISkillSet } from '../models/skills';
 import { getExpandedProjectCollaborators, getExpandedUserSkillSetEndorsers } from '../utils/transformers';
 import { IProject } from '../models/projects';
 import { IExperience } from '../models/experience';
+import { ICertification } from '../models/certifications';
 
 const getUserProfile = async (
     req: Request,
@@ -335,6 +336,39 @@ const putUserExperiences = async (
     return res.status(200).json(response);
 };
 
+const getUserCertificates = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userId = req.params.user_id;
+    const user = await DBQueries.getUserById(userId);
+    const userProjcts = await DBQueries.getCertificates(user.certificationsRefId);
+    const response: HttpResponse = {
+        success: true,
+        data: userProjcts,
+    };
+    return res.status(200).json(response);
+};
+
+const putUserCertifications = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userId = req.params.user_id;
+    const certificates = req.body as Array<ICertification>;
+    const user = await DBQueries.getUserById(userId);
+    const updatedCertificates = await DBQueries.updateCertificates(user.certificationsRefId, certificates);
+    const response: HttpResponse = {
+        success: true,
+        data: updatedCertificates,
+    };
+    return res.status(200).json(response);
+};
+
 const getUserProjects = async (
     req: Request,
     res: Response,
@@ -427,6 +461,8 @@ const USER_CONTROLLER = {
     putUserProjects: asyncHandler(putUserProjects),
     getUserExperiences: asyncHandler(getUserExperiences),
     putUserExperiences: asyncHandler(putUserExperiences),
+    getUserCertificates: asyncHandler(getUserCertificates),
+    putUserCertifications: asyncHandler(putUserCertifications),
 };
 
 export default USER_CONTROLLER;
