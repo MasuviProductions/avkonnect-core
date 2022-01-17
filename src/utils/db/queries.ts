@@ -8,6 +8,7 @@ import { fetchDDBPaginatedDocuments, IFollowResourceValues } from './helpers';
 import { HttpDDBResponsePagination } from '../../interfaces/generic';
 import Projects, { IProject, IProjects } from '../../models/projects';
 import Experiences, { IExperience, IExperiences } from '../../models/experience';
+import Certifications, { ICertifications, ICertification } from '../../models/certifications';
 
 const getAuthUserByEmail = async (email: string): Promise<IUser> => {
     const userDocuments = await User.scan({
@@ -83,6 +84,16 @@ const getConnection = async (connectorId: string, connecteeId: string): Promise<
     return connections[0];
 };
 
+const createCertifications = async (): Promise<ICertifications> => {
+    const certifications: ICertifications = {
+        id: v4(),
+        certifications: Array<ICertification>(),
+    };
+    const certificationObj = new Certifications(certifications);
+    certificationObj.save();
+    return certifications;
+};
+
 const createSkills = async (): Promise<ISkills> => {
     const skills: ISkills = {
         id: v4(),
@@ -129,6 +140,17 @@ const updateExperiences = async (experiencesId: string, experiences: Array<IExpe
     return await Experiences.update({ id: experiencesId }, { experiences: experiences });
 };
 
+const getCertifications = async (certificationsId: string): Promise<ICertifications> => {
+    return await Certifications.get({ id: certificationsId });
+};
+
+const updateCertifications = async (
+    certificationsId: string,
+    certifications: Array<ICertification>
+): Promise<ICertifications> => {
+    return await Certifications.update({ id: certificationsId }, { certifications: certifications });
+};
+
 const getProjects = async (projectsId: string): Promise<IProjects> => {
     return await Projects.get({ id: projectsId });
 };
@@ -156,6 +178,9 @@ const DBQueries = {
     getExperiences,
     createExperiences,
     updateProjects,
+    createCertifications,
+    getCertifications,
+    updateCertifications,
 };
 
 export default DBQueries;

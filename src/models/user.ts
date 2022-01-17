@@ -66,6 +66,7 @@ export interface IUser {
     experiencesRefId: string;
     searchFields: IUserSearchFields;
     skillsRefId: string;
+    certificationsRefId: string;
 }
 // Changes in UserSchemaObj must be updated in IUser
 const UserSchema = new dynamoose.Schema(
@@ -89,6 +90,7 @@ const UserSchema = new dynamoose.Schema(
         preferences: { type: Object, schema: UserPreferenceSchema },
         searchFields: { type: Object, schema: UserSearchfieldsSchema },
         skillsRefId: { type: String },
+        certificationsRefId: { type: String },
     },
     {
         timestamps: true,
