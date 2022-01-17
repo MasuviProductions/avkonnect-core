@@ -33,7 +33,7 @@ userSkillsRouter.route('/').get(USER_CONTROLLER.getUserSkills).put([body().isArr
 
 userCertificationsRouter
     .route('/')
-    .get(USER_CONTROLLER.getUserCertificates)
+    .get(USER_CONTROLLER.getUserCertifications)
     .put([body().isArray()], USER_CONTROLLER.putUserCertifications);
 
 userProjectsRouter

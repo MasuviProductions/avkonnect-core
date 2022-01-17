@@ -140,15 +140,15 @@ const updateExperiences = async (experiencesId: string, experiences: Array<IExpe
     return await Experiences.update({ id: experiencesId }, { experiences: experiences });
 };
 
-const getCertificates = async (certificatesId: string): Promise<ICertifications> => {
-    return await Certifications.get({ id: certificatesId });
+const getCertifications = async (certificationsId: string): Promise<ICertifications> => {
+    return await Certifications.get({ id: certificationsId });
 };
 
-const updateCertificates = async (
-    certificatesId: string,
-    certificates: Array<ICertification>
+const updateCertifications = async (
+    certificationsId: string,
+    certifications: Array<ICertification>
 ): Promise<ICertifications> => {
-    return await Certifications.update({ id: certificatesId }, { certifications: certificates });
+    return await Certifications.update({ id: certificationsId }, { certifications: certifications });
 };
 
 const getProjects = async (projectsId: string): Promise<IProjects> => {
@@ -179,8 +179,8 @@ const DBQueries = {
     createExperiences,
     updateProjects,
     createCertifications,
-    getCertificates,
-    updateCertificates,
+    getCertifications,
+    updateCertifications,
 };
 
 export default DBQueries;

@@ -336,7 +336,7 @@ const putUserExperiences = async (
     return res.status(200).json(response);
 };
 
-const getUserCertificates = async (
+const getUserCertifications = async (
     req: Request,
     res: Response,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -344,7 +344,7 @@ const getUserCertificates = async (
 ) => {
     const userId = req.params.user_id;
     const user = await DBQueries.getUserById(userId);
-    const userProjcts = await DBQueries.getCertificates(user.certificationsRefId);
+    const userProjcts = await DBQueries.getCertifications(user.certificationsRefId);
     const response: HttpResponse = {
         success: true,
         data: userProjcts,
@@ -361,7 +361,7 @@ const putUserCertifications = async (
     const userId = req.params.user_id;
     const certificates = req.body as Array<ICertification>;
     const user = await DBQueries.getUserById(userId);
-    const updatedCertificates = await DBQueries.updateCertificates(user.certificationsRefId, certificates);
+    const updatedCertificates = await DBQueries.updateCertifications(user.certificationsRefId, certificates);
     const response: HttpResponse = {
         success: true,
         data: updatedCertificates,
@@ -461,7 +461,7 @@ const USER_CONTROLLER = {
     putUserProjects: asyncHandler(putUserProjects),
     getUserExperiences: asyncHandler(getUserExperiences),
     putUserExperiences: asyncHandler(putUserExperiences),
-    getUserCertificates: asyncHandler(getUserCertificates),
+    getUserCertifications: asyncHandler(getUserCertifications),
     putUserCertifications: asyncHandler(putUserCertifications),
 };
 
