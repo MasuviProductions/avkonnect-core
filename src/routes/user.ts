@@ -18,7 +18,7 @@ USER_ROUTER.use('/:user_id/skills', userSkillsRouter);
 USER_ROUTER.use('/:user_id/projects', userProjectsRouter);
 USER_ROUTER.use('/:user_id/signedURL', userSignedURLRouter);
 USER_ROUTER.use('/:user_id/experiences', userExperiencesRouter);
-USER_ROUTER.use('/:user_id/certificates', userCertificationsRouter);
+USER_ROUTER.use('/:user_id/certifications', userCertificationsRouter);
 
 userFollowingRouter
     .route('/:followee_id')

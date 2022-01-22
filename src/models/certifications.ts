@@ -7,10 +7,10 @@ const validateIfNumberIsEpoch = (val: ValueType) => typeof val === 'number' && !
 
 export interface ICertification {
     name: string;
-    company: string;
+    issuerName: string;
     description: string;
-    issuedDate: number;
-    expiry: number;
+    issuedAt: number;
+    expiresAt: number;
     industry: string;
     photoUrl: string;
     link: string;
@@ -18,10 +18,10 @@ export interface ICertification {
 
 const CertificationSchema = new dynamoose.Schema({
     name: { type: String },
-    company: { type: String },
+    issuerName: { type: String },
     description: { type: String },
-    issuedDate: { type: Number, validate: validateIfNumberIsEpoch },
-    expiry: { type: Number, validate: validateIfNumberIsEpoch },
+    issuedAt: { type: Number, validate: validateIfNumberIsEpoch },
+    expiresAt: { type: Number, validate: validateIfNumberIsEpoch },
     industry: { type: String },
     photoUrl: { type: String },
     link: { type: String },
