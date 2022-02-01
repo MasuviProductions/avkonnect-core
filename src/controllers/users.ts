@@ -58,6 +58,28 @@ const patchUserProfile = async (
     return res.status(200).json(response);
 };
 
+const postUserFeedback = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userId = req.params.user_id;
+    const subject = req.body.subject;
+    const description = req.body.description;
+    const authUser = req.authUser;
+    if (!authUser || authUser.id !== userId) {
+        throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+    }
+
+    const feedback = await DBQueries.createFeedback(userId, subject, description);
+    const response: HttpResponse = {
+        success: true,
+        data: feedback,
+    };
+    return res.status(200).json(response);
+};
+
 const postFollowingForUser = async (
     req: Request,
     res: Response,
@@ -463,6 +485,7 @@ const USER_CONTROLLER = {
     putUserExperiences: asyncHandler(putUserExperiences),
     getUserCertifications: asyncHandler(getUserCertifications),
     putUserCertifications: asyncHandler(putUserCertifications),
+    postUserFeedback: asyncHandler(postUserFeedback),
 };
 
 export default USER_CONTROLLER;

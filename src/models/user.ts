@@ -85,6 +85,8 @@ const UserSchema = new dynamoose.Schema(
         headline: { type: String },
         name: { type: String },
         phone: { type: String },
+        gender: { type: String },
+        location: { type: String },
         projectsRefId: { type: String },
         experiencesRefId: { type: String },
         preferences: { type: Object, schema: UserPreferenceSchema },
