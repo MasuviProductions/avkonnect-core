@@ -28,7 +28,6 @@ const getUserById = async (id: string): Promise<IUser> => {
 };
 
 const getUserInfoForIds = async (idList: Set<string>): Promise<Array<Partial<IUser>>> => {
-    console.log('idList', idList);
     const usersDocuments = await User.scan(new dynamoose.Condition('id').in(Array.from(idList)))
         .attributes(['id', 'name', 'headline', 'displayPictureUrl', 'email', 'location', 'gender'])
         .exec();
