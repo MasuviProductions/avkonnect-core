@@ -61,6 +61,8 @@ export interface IUser {
     headline: string;
     name: string;
     phone: string;
+    gender: string;
+    location: string;
     preferences: IUserPreference;
     projectsRefId: string;
     experiencesRefId: string;

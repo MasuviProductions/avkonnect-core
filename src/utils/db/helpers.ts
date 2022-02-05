@@ -34,6 +34,8 @@ export const getNewUserModelFromJWTUserPayload = async (
         headline: '',
         name: jwtUserPayload.name,
         phone: '',
+        gender: '',
+        location: '',
         preferences: { connections: { isPrivate: false } },
         projectsRefId: newProjects.id,
         searchFields: { name: jwtUserPayload.name.toLowerCase() },

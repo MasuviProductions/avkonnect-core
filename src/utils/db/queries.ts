@@ -52,12 +52,18 @@ const searchUsersByName = async (
     return { users: documents, dDBPagination };
 };
 
-const createFeedback = async (userId: string, subject: string, description: string): Promise<IFeedback> => {
+const createFeedback = async (
+    userId: string,
+    subject: string,
+    description: string,
+    feedbackType: string
+): Promise<IFeedback> => {
     const feedback: IFeedback = {
         id: v4(),
-        user: userId,
+        userId: userId,
         subject: subject,
         description: description,
+        feedbackType: feedbackType,
     };
     const feedbackObj = new Feedback(feedback);
     feedbackObj.save();

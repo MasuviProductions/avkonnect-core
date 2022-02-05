@@ -4,17 +4,19 @@ import { IDynamooseDocument } from '../interfaces/generic';
 
 export interface IFeedback {
     id: string;
-    user: string;
+    userId: string;
     subject: string;
     description: string;
+    feedbackType: string;
 }
 
 const FeedbackSchema = new dynamoose.Schema(
     {
         id: { type: String, hashKey: true },
-        user: { type: String },
+        userId: { type: String },
         subject: { type: String },
         description: { type: String },
+        feedbackType: { type: String },
     },
     {
         timestamps: true,
