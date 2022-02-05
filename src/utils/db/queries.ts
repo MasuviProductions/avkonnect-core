@@ -65,7 +65,7 @@ const createFeedback = async (
         feedbackType: feedbackType,
     };
     const feedbackObj = new Feedback(feedback);
-    feedbackObj.save();
+    await feedbackObj.save();
     return feedback;
 };
 
