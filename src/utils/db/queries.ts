@@ -9,6 +9,7 @@ import { HttpDDBResponsePagination } from '../../interfaces/generic';
 import Projects, { IProject, IProjects } from '../../models/projects';
 import Experiences, { IExperience, IExperiences } from '../../models/experience';
 import Certifications, { ICertifications, ICertification } from '../../models/certifications';
+import Feedback, { IFeedback } from '../../models/feedbacks';
 
 const getAuthUserByEmail = async (email: string): Promise<IUser> => {
     const userDocuments = await User.scan({
@@ -49,6 +50,24 @@ const searchUsersByName = async (
         dDBAssistStartFromId
     );
     return { users: documents, dDBPagination };
+};
+
+const createFeedback = async (
+    userId: string,
+    subject: string,
+    description: string,
+    feedbackType: string
+): Promise<IFeedback> => {
+    const feedback: IFeedback = {
+        id: v4(),
+        userId: userId,
+        subject: subject,
+        description: description,
+        feedbackType: feedbackType,
+    };
+    const feedbackObj = new Feedback(feedback);
+    feedbackObj.save();
+    return feedback;
 };
 
 const createUser = async (user: IUser): Promise<IUser> => {
@@ -182,6 +201,7 @@ const DBQueries = {
     createCertifications,
     getCertifications,
     updateCertifications,
+    createFeedback,
 };
 
 export default DBQueries;
