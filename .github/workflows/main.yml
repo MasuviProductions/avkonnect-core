@@ -25,14 +25,9 @@ jobs:
                   echo "::set-env name=ENVIRONMENT::$ENVIRONMENT"
 
             - name: Setup environment variables
-              env:
-                  AWS_KEY: ${{ secrets[format('{0}_AWS_KEY', $ENVIRONMENT)] }}
-                  AWS_SECRET: ${{ secrets[format('{0}_AWS_SECRET', $ENVIRONMENT)] }}
-                  AWS_REGION: ${{ secrets[format('{0}_AWS_REGION', $ENVIRONMENT)] }}
-                  COGNITO_CLIENT_DOMAIN: ${{ secrets[format('{0}_COGNITO_CLIENT_DOMAIN', $ENVIRONMENT)] }}
-                  COGNITO_ISSUER_URL: ${{ secrets[format('{0}_COGNITO_ISSUER_URL', $ENVIRONMENT)] }}
-                  S3_BUCKET: ${{ secrets[format('{0}_S3_BUCKET', $ENVIRONMENT)] }}
+
               run: |
+                  echo $ENVIRONMENT
                   touch .env
                   echo "AWS_KEY=${AWS_KEY}" >> .env
                   echo "AWS_SECRET=${AWS_SECRET}" >> .env
