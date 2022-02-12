@@ -29,7 +29,6 @@ jobs:
                   COGNITO_ISSUER_URL: ${{ secrets[format('{0}_COGNITO_ISSUER_URL', env.ENVIRONMENT)] }}
                   S3_BUCKET: ${{ secrets[format('{0}_S3_BUCKET', env.ENVIRONMENT)] }}
               run: |
-                  echo ${env.ENVIRONMENT}
                   touch .env
                   echo "AWS_KEY=${AWS_KEY}" >> .env
                   echo "AWS_SECRET=${AWS_SECRET}" >> .env
