@@ -3,23 +3,30 @@ name: AVConnect Backend Deployment
 on:
     push:
         branches: [main]
-
     workflow_dispatch:
+
+env:
+    AWS_KEY: ${{ secrets.AWS_KEY }}
+    AWS_SECRET: ${{ secrets.AWS_SECRET }}
+    AWS_REGION: ${{ secrets.AWS_REGION }}
+    COGNITO_CLIENT_DOMAIN: ${{ secrets.COGNITO_CLIENT_DOMAIN }}
+    COGNITO_ISSUER_URL: ${{ secrets.COGNITO_ISSUER_URL }}
+    S3_BUCKET: ${{ secrets.S3_BUCKET }}
 
 jobs:
     serverless-deployment:
         runs-on: ubuntu-latest
-        env:
-            AWS_KEY: '${{ secrets.AWS_KEY }}'
-            AWS_SECRET: ${{ secrets.AWS_SECRET }}'
-            AWS_REGION: '${{ secrets.AWS_REGION }}'
-            COGNITO_CLIENT_DOMAIN: '${{ secrets.COGNITO_CLIENT_DOMAIN }}'
-            COGNITO_ISSUER_URL: '${{ secrets.COGNITO_ISSUER_URL }}'
-            S3_BUCKET: '${{ secrets.S3_BUCKET }}'
-
         steps:
             - uses: actions/checkout@v2
 
+            - name: Intialize env
+              run: |
+                  echo "AWS_KEY=${AWS_KEY}" >> $GITHUB_ENV
+                  echo "AWS_SECRET=${AWS_SECRET}" >> $GITHUB_ENV
+                  echo "AWS_REGION=${AWS_REGION}" >> $GITHUB_ENV
+                  echo "COGNITO_CLIENT_DOMAIN=${COGNITO_CLIENT_DOMAIN}" >> $GITHUB_ENV
+                  echo "COGNITO_ISSUER_URL=${COGNITO_ISSUER_URL}" >> $GITHUB_ENV
+                  echo "S3_BUCKET=${S3_BUCKET}" >> $GITHUB_ENV
             # Runs a single command using the runners shell
             - name: Install node packages
               run: npm install
