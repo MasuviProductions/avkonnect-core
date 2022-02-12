@@ -22,12 +22,12 @@ jobs:
 
             - name: Setup environment variables
               env:
-                  AWS_KEY: ${{ secrets[format('{0}_AWS_KEY', env.ENVIRONMENT)] }}
-                  AWS_SECRET: ${{ secrets[format('{0}_AWS_SECRET', env.ENVIRONMENT)] }}
-                  AWS_REGION: ${{ secrets[format('{0}_AWS_REGION', env.ENVIRONMENT)] }}
-                  COGNITO_CLIENT_DOMAIN: ${{ secrets[format('{0}_COGNITO_CLIENT_DOMAIN', env.ENVIRONMENT)] }}
-                  COGNITO_ISSUER_URL: ${{ secrets[format('{0}_COGNITO_ISSUER_URL', env.ENVIRONMENT)] }}
-                  S3_BUCKET: ${{ secrets[format('{0}_S3_BUCKET', env.ENVIRONMENT)] }}
+                  AWS_KEY: '${{ secrets[format('{0}_AWS_KEY', env.ENVIRONMENT)] }}'
+                  AWS_SECRET: '${{ secrets[format('{0}_AWS_SECRET', env.ENVIRONMENT)] }}'
+                  AWS_REGION: '${{ secrets[format('{0}_AWS_REGION', env.ENVIRONMENT)] }}'
+                  COGNITO_CLIENT_DOMAIN: '${{ secrets[format('{0}_COGNITO_CLIENT_DOMAIN', env.ENVIRONMENT)] }}'
+                  COGNITO_ISSUER_URL: '${{ secrets[format('{0}_COGNITO_ISSUER_URL', env.ENVIRONMENT)] }}'
+                  S3_BUCKET: '${{ secrets[format('{0}_S3_BUCKET', env.ENVIRONMENT)] }}'
               run: |
                   touch .env
                   echo "AWS_KEY=${AWS_KEY}" >> .env
