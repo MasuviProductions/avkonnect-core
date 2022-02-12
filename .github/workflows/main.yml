@@ -17,19 +17,6 @@ definitions:
             S3_BUCKET: ${{ secrets[format('{0}_S3_BUCKET', env.ENVIRONMENT)] }}      
 
 jobs:
-    prod-env:
-        if: github.ref == 'refs/heads/main'
-        env:
-            ENVIRONMENT: PROD
-        env: *init-env
-
-    dev-env:
-        if: github.ref == 'refs/heads/dev'
-        env:
-            ENVIRONMENT: DEV
-        env: *init-env
-
-
     serverless-deployment:
         runs-on: ubuntu-latest
 
