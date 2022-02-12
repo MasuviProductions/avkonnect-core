@@ -2,7 +2,7 @@ name: AVKonnect Backend Deployment
 
 on:
     push:
-        branches: [main, dev]
+        branches: [main, development]
 
     workflow_dispatch:
 
