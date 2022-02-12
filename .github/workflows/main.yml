@@ -14,20 +14,25 @@ jobs:
 
             - name: Initializing prod environment
               if: github.ref == 'refs/heads/main'
-              run: |
-                  export ENVIRONMENT=PROD
-                  echo "::set-env name=ENVIRONMENT::$ENVIRONMENT"
+              env:
+                  ENVIRONMENT: PROD
+              run: export ENVIRONMENT=PROD
 
             - name: Initializing dev environment
               if: github.ref == 'refs/heads/dev'
-              run: |
-                  export ENVIRONMENT=DEV
-                  echo "::set-env name=ENVIRONMENT::$ENVIRONMENT"
+              env:
+                  ENVIRONMENT: DEV
+              run: echo "Configured dev environment"
 
             - name: Setup environment variables
-
+              env:
+                  AWS_KEY: ${{ secrets[format('{0}_AWS_KEY', env.ENVIRONMENT)] }}
+                  AWS_SECRET: ${{ secrets[format('{0}_AWS_SECRET', env.ENVIRONMENT)] }}
+                  AWS_REGION: ${{ secrets[format('{0}_AWS_REGION', env.ENVIRONMENT)] }}
+                  COGNITO_CLIENT_DOMAIN: ${{ secrets[format('{0}_COGNITO_CLIENT_DOMAIN', env.ENVIRONMENT)] }}
+                  COGNITO_ISSUER_URL: ${{ secrets[format('{0}_COGNITO_ISSUER_URL', env.ENVIRONMENT)] }}
+                  S3_BUCKET: ${{ secrets[format('{0}_S3_BUCKET', env.ENVIRONMENT)] }}
               run: |
-                  echo $ENVIRONMENT
                   touch .env
                   echo "AWS_KEY=${AWS_KEY}" >> .env
                   echo "AWS_SECRET=${AWS_SECRET}" >> .env
