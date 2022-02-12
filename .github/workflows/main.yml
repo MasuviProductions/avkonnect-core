@@ -14,11 +14,15 @@ jobs:
 
             - name: Initializing prod environment
               if: github.ref == 'refs/heads/main'
-              run: export ENVIRONMENT=PROD
+              run: |
+                  export ENVIRONMENT=PROD
+                  echo "::set-env name=ENVIRONMENT::$ENVIRONMENT"
 
             - name: Initializing dev environment
               if: github.ref == 'refs/heads/dev'
-              run: export ENVIRONMENT=DEV
+              run: |
+                  export ENVIRONMENT=DEV
+                  echo "::set-env name=ENVIRONMENT::$ENVIRONMENT"
 
             - name: Setup environment variables
               env:
