@@ -1,6 +1,6 @@
 # serverless.yml
 
-service: avconnect-service
+service: avkonnect-service
 
 provider:
     name: aws

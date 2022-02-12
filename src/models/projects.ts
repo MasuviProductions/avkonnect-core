@@ -41,6 +41,6 @@ const ProjectsSchema = new dynamoose.Schema(
         timestamps: true,
     }
 );
-const Projects = dynamoose.model<IDynamooseDocument<IProjects>>(TABLE.Projects, ProjectsSchema);
+const Projects = dynamoose.model<IDynamooseDocument<IProjects>>(TABLE.PROJECTS, ProjectsSchema);
 
 export default Projects;

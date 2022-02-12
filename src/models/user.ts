@@ -100,7 +100,7 @@ const UserSchema = new dynamoose.Schema(
         timestamps: true,
     }
 );
-const User = dynamoose.model<IDynamooseDocument<IUser>>(TABLE.Users, UserSchema);
+const User = dynamoose.model<IDynamooseDocument<IUser>>(TABLE.USERS, UserSchema);
 
 export const READABLE_USER_PROPERTIES = [
     'id',

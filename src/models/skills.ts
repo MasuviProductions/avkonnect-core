@@ -38,6 +38,6 @@ const SkillsSchema = new dynamoose.Schema(
         timestamps: true,
     }
 );
-const Skills = dynamoose.model<IDynamooseDocument<ISkills>>(TABLE.Skills, SkillsSchema);
+const Skills = dynamoose.model<IDynamooseDocument<ISkills>>(TABLE.SKILLS, SkillsSchema);
 
 export default Skills;

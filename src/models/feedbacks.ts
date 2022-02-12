@@ -22,6 +22,6 @@ const FeedbackSchema = new dynamoose.Schema(
         timestamps: true,
     }
 );
-const Feedback = dynamoose.model<IDynamooseDocument<IFeedback>>(TABLE.Feedbacks, FeedbackSchema);
+const Feedback = dynamoose.model<IDynamooseDocument<IFeedback>>(TABLE.FEEDBACKS, FeedbackSchema);
 
 export default Feedback;

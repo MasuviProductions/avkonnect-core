@@ -1,4 +1,4 @@
-name: AVConnect Backend Deployment
+name: AVKonnect Backend Deployment
 
 on:
     push:

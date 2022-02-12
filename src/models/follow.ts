@@ -18,6 +18,6 @@ const FollowSchema = new dynamoose.Schema(
         timestamps: true,
     }
 );
-const Follow = dynamoose.model<IDynamooseDocument<IFollow>>(TABLE.Follows, FollowSchema);
+const Follow = dynamoose.model<IDynamooseDocument<IFollow>>(TABLE.FOLLOWS, FollowSchema);
 
 export default Follow;

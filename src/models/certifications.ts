@@ -40,6 +40,6 @@ const CertificationsSchema = new dynamoose.Schema(
         timestamps: true,
     }
 );
-const Certifications = dynamoose.model<IDynamooseDocument<ICertifications>>(TABLE.Certifications, CertificationsSchema);
+const Certifications = dynamoose.model<IDynamooseDocument<ICertifications>>(TABLE.CERTIFICATIONS, CertificationsSchema);
 
 export default Certifications;

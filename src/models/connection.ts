@@ -24,6 +24,6 @@ const ConnectionSchema = new dynamoose.Schema(
         timestamps: true,
     }
 );
-const Connection = dynamoose.model<IDynamooseDocument<IConnection>>(TABLE.Connections, ConnectionSchema);
+const Connection = dynamoose.model<IDynamooseDocument<IConnection>>(TABLE.CONNECTIONS, ConnectionSchema);
 
 export default Connection;
