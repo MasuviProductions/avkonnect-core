@@ -2,7 +2,7 @@ name: AVKonnect Backend Deployment
 
 on:
     push:
-        branches: [main, dev]
+        branches: [main, development]
 
     workflow_dispatch:
 
@@ -11,6 +11,7 @@ jobs:
         runs-on: ubuntu-latest
         env:
             PROD_VARIABLES: ${{ secrets.PROD_VARIABLES }}
+            DEV_VARIABLES: ${{ secrets.DEV_VARIABLES }}
 
         steps:
             - uses: actions/checkout@v2
