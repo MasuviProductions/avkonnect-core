@@ -14,26 +14,22 @@ jobs:
 
             - name: Initializing prod environment
               if: github.ref == 'refs/heads/main'
-              env:
-                  ENVIRONMENT: PROD
-              run: export ENVIRONMENT=PROD
+              run: echo "ENVIRONMENT=PROD" >> $GITHUB_ENV
 
             - name: Initializing dev environment
               if: github.ref == 'refs/heads/dev'
-              env:
-                  ENVIRONMENT: DEV
-              run: echo "Configured dev environment"
+              run: echo "ENVIRONMENT=DEV" >> $GITHUB_ENV
 
             - name: Setup environment variables
               env:
-                  AWS_KEY: ${{ secrets[format('{0}_AWS_KEY', ${ENVIRONMENT})] }}
-                  AWS_SECRET: ${{ secrets[format('{0}_AWS_SECRET', ${ENVIRONMENT})] }}
-                  AWS_REGION: ${{ secrets[format('{0}_AWS_REGION', ${ENVIRONMENT})] }}
-                  COGNITO_CLIENT_DOMAIN: ${{ secrets[format('{0}_COGNITO_CLIENT_DOMAIN', ${ENVIRONMENT})] }}
-                  COGNITO_ISSUER_URL: ${{ secrets[format('{0}_COGNITO_ISSUER_URL', ${ENVIRONMENT})] }}
-                  S3_BUCKET: ${{ secrets[format('{0}_S3_BUCKET', ${ENVIRONMENT})] }}
+                  AWS_KEY: ${{ secrets[format('{0}_AWS_KEY', env.ENVIRONMENT)] }}
+                  AWS_SECRET: ${{ secrets[format('{0}_AWS_SECRET', env.ENVIRONMENT)] }}
+                  AWS_REGION: ${{ secrets[format('{0}_AWS_REGION', env.ENVIRONMENT)] }}
+                  COGNITO_CLIENT_DOMAIN: ${{ secrets[format('{0}_COGNITO_CLIENT_DOMAIN', env.ENVIRONMENT)] }}
+                  COGNITO_ISSUER_URL: ${{ secrets[format('{0}_COGNITO_ISSUER_URL', env.ENVIRONMENT)] }}
+                  S3_BUCKET: ${{ secrets[format('{0}_S3_BUCKET', env.ENVIRONMENT)] }}
               run: |
-                  echo ${ENVIRONMENT}
+                  echo ${env.ENVIRONMENT}
                   touch .env
                   echo "AWS_KEY=${AWS_KEY}" >> .env
                   echo "AWS_SECRET=${AWS_SECRET}" >> .env
