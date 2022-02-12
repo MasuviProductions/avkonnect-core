@@ -2,35 +2,37 @@ name: AVConnect Backend Deployment
 
 on:
     push:
-        branches: [main, dev]
+        branches: [main]
+    pull_request:
+        branches: [main]
+
     workflow_dispatch:
 
 jobs:
     serverless-deployment:
         runs-on: ubuntu-latest
+        env:
+            AWS_KEY: ${{ secrets.AWS_KEY }}
+            AWS_SECRET: ${{ secrets.AWS_SECRET }}
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+            COGNITO_CLIENT_DOMAIN: ${{ secrets.COGNITO_CLIENT_DOMAIN }}
+            COGNITO_ISSUER_URL: ${{ secrets.COGNITO_ISSUER_URL }}
+            S3_BUCKET: ${{ secrets.S3_BUCKET }}
 
         steps:
             - uses: actions/checkout@v2
 
-            - name: Initializing prod environment
-              if: github.ref == 'refs/heads/main'
-              run: echo "ENVIRONMENT=PROD" >> $GITHUB_ENV
-
-            - name: Initializing dev environment
-              if: github.ref == 'refs/heads/dev'
-              run: echo "ENVIRONMENT=DEV" >> $GITHUB_ENV
-
-            - name: Setup environment variables
+            - name: Intialize .env
               run: |
                   touch .env
-                  echo "AWS_KEY=${{ secrets[format('{0}_AWS_KEY', env.ENVIRONMENT)] }}" >> $GITHUB_ENV >> .env
-                  echo "AWS_SECRET=${{ secrets[format('{0}_AWS_SECRET', env.ENVIRONMENT)] }}" >> $GITHUB_ENV >> .env
-                  echo "AWS_REGION=${{ secrets[format('{0}_AWS_REGION', env.ENVIRONMENT)] }}" >> $GITHUB_ENV >> .env
-                  echo "COGNITO_CLIENT_DOMAIN=${{ secrets[format('{0}_COGNITO_CLIENT_DOMAIN', env.ENVIRONMENT)] }}" >> $GITHUB_ENV >> .env
-                  echo "COGNITO_ISSUER_URL=${{ secrets[format('{0}_COGNITO_ISSUER_URL', env.ENVIRONMENT)] }}" >> $GITHUB_ENV >> .env
-                  echo "S3_BUCKET=${{ secrets[format('{0}_S3_BUCKET', env.ENVIRONMENT)] }}" >> $GITHUB_ENV >> .env
+                  echo "AWS_KEY=${AWS_KEY}" >> .env
+                  echo "AWS_SECRET=${AWS_SECRET}" >> .env
+                  echo "AWS_REGION=${AWS_REGION}" >> .env
+                  echo "COGNITO_CLIENT_DOMAIN=${COGNITO_CLIENT_DOMAIN}" >> .env
+                  echo "COGNITO_ISSUER_URL=${COGNITO_ISSUER_URL}" >> .env
+                  echo "S3_BUCKET=${S3_BUCKET}" >> .env
                   cat .env
-
+            # Runs a single command using the runners shell
             - name: Install node packages
               run: npm install
 
@@ -40,13 +42,7 @@ jobs:
             - name: Generating build
               run: npm run build
 
-            - name: Configure AWS credentials
-              run: npx serverless config credentials --provider aws --key ${{env.AWS_KEY}} --secret ${{env.AWS_SECRET}}
-
-            - name: Production deployment
-              if: github.ref == 'refs/heads/main'
-              run: npm run serverless:deploy:prod
-
-            - name: Development deployment
-              if: github.ref == 'refs/heads/dev'
-              run: npm run serverless:deploy:dev
+            - name: Deploy to AWS
+              run: |
+                  npm run serverless:credentials
+                  npm run serverless:deploy
