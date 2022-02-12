@@ -2,7 +2,7 @@ name: AVConnect Backend Deployment
 
 on:
     push:
-        branches: [main]
+        branches: [main, dev]
 
     workflow_dispatch:
 
@@ -18,7 +18,7 @@ jobs:
             - name: Intialize .env
               run: |
                   touch .env
-                  echo "${PROD_VARIABLES}" >> .env
+                  [[ ${GITHUB_REF#refs/heads/} = main ]] && echo "${PROD_VARIABLES}" >> .env || echo "${DEV_VARIABLES}" >> .env
                   cat .env
             # Runs a single command using the runners shell
             - name: Install node packages
@@ -30,7 +30,10 @@ jobs:
             - name: Generating build
               run: npm run build
 
+            - name: Configure AWS credentials
+              run: npm run serverless:credentials
+
             - name: Deploy to AWS
               run: |
-                  npm run serverless:credentials
-                  npm run serverless:deploy
+
+                  [[ ${GITHUB_REF#refs/heads/} = main ]] && npm run serverless:deploy:prod || serverless:deploy:stage

@@ -12,7 +12,8 @@
         "start:server": "node ./build/server.js",
         "start:dev": "nodemon --files ./src/server.ts ",
         "serverless:credentials": "eval $(grep '^AWS_KEY' .env) && eval $(grep '^AWS_SECRET' .env) && serverless config credentials --provider aws --key ${AWS_KEY} --secret ${AWS_SECRET}",
-        "serverless:deploy": "serverless deploy"
+        "serverless:deploy:prod": "serverless deploy --stage prod",
+        "serverless:deploy:dev": "serverless deploy --stage dev"
     },
     "husky": {
         "hooks": {
