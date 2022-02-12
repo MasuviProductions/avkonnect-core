@@ -30,7 +30,6 @@ jobs:
         env: *init-env
 
 
-    initialize-variables
     serverless-deployment:
         runs-on: ubuntu-latest
         env:
