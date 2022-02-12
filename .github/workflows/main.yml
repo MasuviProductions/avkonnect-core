@@ -35,5 +35,4 @@ jobs:
 
             - name: Deploy to AWS
               run: |
-
-                  [[ ${GITHUB_REF#refs/heads/} = main ]] && npm run serverless:deploy:prod || serverless:deploy:stage
+                  [[ ${GITHUB_REF#refs/heads/} = main ]] && npm run serverless:deploy:prod || npm run serverless:deploy:dev
