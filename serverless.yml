@@ -5,7 +5,6 @@ service: avconnect-service
 provider:
     name: aws
     runtime: nodejs14.x
-    stage: dev
     region: ap-south-1
     lambdaHashingVersion: 20201221
     apiGateway:
