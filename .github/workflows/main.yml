@@ -41,7 +41,7 @@ jobs:
               run: npm run build
 
             - name: Configure AWS credentials
-              run: serverless config credentials --provider aws --key ${{env.AWS_KEY}} --secret ${{env.AWS_SECRET}}
+              run: npx serverless config credentials --provider aws --key ${{env.AWS_KEY}} --secret ${{env.AWS_SECRET}}
 
             - name: Production deployment
               if: github.ref == 'refs/heads/main'
