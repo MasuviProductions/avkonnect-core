@@ -23,12 +23,12 @@ jobs:
             - name: Setup environment variables
               run: |
                   touch .env
-                  echo "AWS_KEY=${{ secrets[format('{0}_AWS_KEY', env.ENVIRONMENT)] }}" >> .env
-                  echo "AWS_SECRET=${{ secrets[format('{0}_AWS_SECRET', env.ENVIRONMENT)] }}" >> .env
-                  echo "AWS_REGION=${{ secrets[format('{0}_AWS_REGION', env.ENVIRONMENT)] }}" >> .env
-                  echo "COGNITO_CLIENT_DOMAIN=${{ secrets[format('{0}_COGNITO_CLIENT_DOMAIN', env.ENVIRONMENT)] }}" >> .env
-                  echo "COGNITO_ISSUER_URL=${{ secrets[format('{0}_COGNITO_ISSUER_URL', env.ENVIRONMENT)] }}" >> .env
-                  echo "S3_BUCKET=${{ secrets[format('{0}_S3_BUCKET', env.ENVIRONMENT)] }}" >> .env
+                  echo "AWS_KEY=${{ secrets[format('{0}_AWS_KEY', env.ENVIRONMENT)] }}" >> $GITHUB_ENV >> .env
+                  echo "AWS_SECRET=${{ secrets[format('{0}_AWS_SECRET', env.ENVIRONMENT)] }}" >> $GITHUB_ENV >> .env
+                  echo "AWS_REGION=${{ secrets[format('{0}_AWS_REGION', env.ENVIRONMENT)] }}" >> $GITHUB_ENV >> .env
+                  echo "COGNITO_CLIENT_DOMAIN=${{ secrets[format('{0}_COGNITO_CLIENT_DOMAIN', env.ENVIRONMENT)] }}" >> $GITHUB_ENV >> .env
+                  echo "COGNITO_ISSUER_URL=${{ secrets[format('{0}_COGNITO_ISSUER_URL', env.ENVIRONMENT)] }}" >> $GITHUB_ENV >> .env
+                  echo "S3_BUCKET=${{ secrets[format('{0}_S3_BUCKET', env.ENVIRONMENT)] }}" >> $GITHUB_ENV >> .env
                   cat .env
 
             - name: Install node packages
