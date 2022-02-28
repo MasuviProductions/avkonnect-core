@@ -3,53 +3,61 @@ import { v4 } from 'uuid';
 import Skills, { ISkills, ISkillSet } from '../../models/skills';
 import Connection, { IConnection } from '../../models/connection';
 import Follow, { IFollow } from '../../models/follow';
-import User, { IEditableUser, IUser } from '../../models/user';
-import { fetchDDBPaginatedDocuments, IFollowResourceValues } from './helpers';
-import { HttpDDBResponsePagination } from '../../interfaces/generic';
+// import User, { IEditableUser, IUser } from '../../models/user';
+import { IFollowResourceValues } from './helpers';
+// import { HttpDDBResponsePagination } from '../../interfaces/generic';
 import Projects, { IProject, IProjects } from '../../models/projects';
 import Experiences, { IExperience, IExperiences } from '../../models/experience';
 import Certifications, { ICertifications, ICertification } from '../../models/certifications';
 import Feedback, { IFeedback } from '../../models/feedbacks';
+import User, { IUser, IEditableUser } from '../../models/user';
 
+// const mongopost = async (data: string): Promise<IComment> => {
+//     const mongo = await Comment.find({ userId: data })
+//         .exec();
+//     return mongo;
+// };
+
+//x
 const getAuthUserByEmail = async (email: string): Promise<IUser> => {
-    const userDocuments = await User.scan({
+    const userDocuments = await User.findOne({
         email: email,
     })
-        .attributes(['id', 'email'])
+        // .attributes(['id', 'email'])
         .exec();
-    return userDocuments[0];
+    return userDocuments as IUser;
 };
-
+//x
 const getUserById = async (id: string): Promise<IUser> => {
-    const userDocument = await User.get({
+    const userDocument = await User.findOne({
         id: id,
     });
-    return userDocument;
+    return userDocument as IUser;
 };
-
+//x
 const getUserInfoForIds = async (idList: Set<string>): Promise<Array<Partial<IUser>>> => {
-    const usersDocuments = await User.scan(new dynamoose.Condition('id').in(Array.from(idList)))
-        .attributes(['id', 'name', 'headline', 'displayPictureUrl', 'email', 'location', 'gender'])
+    const usersDocuments = await User.find(idList)
+        // .attributes(['id', 'name', 'headline', 'displayPictureUrl', 'email', 'location', 'gender'])
         .exec();
     return usersDocuments as Array<Partial<IUser>>;
 };
-
-const searchUsersByName = async (
-    searchString: string,
-    limit: number,
-    dDBAssistStartFromId?: string
-): Promise<{ users: Array<Partial<IUser>>; dDBPagination: HttpDDBResponsePagination }> => {
-    const scanInitialUser = User.scan(
-        new dynamoose.Condition().filter('searchFields.name').beginsWith(decodeURI(searchString.toLowerCase()))
-    );
-    const { documents, dDBPagination } = await fetchDDBPaginatedDocuments<IUser>(
-        scanInitialUser,
-        ['id', 'name', 'headline', 'displayPictureUrl'],
-        limit,
-        dDBAssistStartFromId
-    );
-    return { users: documents, dDBPagination };
-};
+//x
+// const searchUsersByName = async (
+//     searchString: string,
+//     limit: number,
+//     dDBAssistStartFromId?: string
+// ): Promise<{ users: Array<Partial<IUser>>; dDBPagination: HttpDDBResponsePagination }> => {
+//     const scanInitialUser = User.scan(
+//         new dynamoose.Condition().filter('searchFields.name').beginsWith(decodeURI(searchString.toLowerCase()))
+//     );
+//     const { documents, dDBPagination } = await fetchDDBPaginatedDocuments<IUser>(
+//         scanInitialUser,
+//         ['id', 'name', 'headline', 'displayPictureUrl'],
+//         limit,
+//         dDBAssistStartFromId
+//     );
+//     return { users: documents, dDBPagination };
+// };
 
 const createFeedback = async (
     userId: string,
@@ -68,15 +76,16 @@ const createFeedback = async (
     await feedbackObj.save();
     return feedback;
 };
-
+//x
 const createUser = async (user: IUser): Promise<IUser> => {
     const myUser = new User(user);
     await myUser.save();
     return user;
 };
-
+//x
 const updateUser = async (userId: string, user: IEditableUser): Promise<IUser> => {
-    return await User.update({ id: userId }, { ...user });
+    const data = await User.findByIdAndUpdate({ id: { $eq: userId } }, user);
+    return data as IUser;
 };
 
 const getUserFollowResources = async (
@@ -190,7 +199,7 @@ const DBQueries = {
     createSkills,
     getSkills,
     updateSkills,
-    searchUsersByName,
+    // searchUsersByName,
     createProjects,
     getProjects,
     updateExperiences,
@@ -201,6 +210,7 @@ const DBQueries = {
     getCertifications,
     updateCertifications,
     createFeedback,
+    // mongopost,
 };
 
 export default DBQueries;

@@ -5,8 +5,7 @@ import asyncHandler from '../middlewares/asyncHandler';
 import DBQueries from '../utils/db/queries';
 import { HttpError } from '../utils/error';
 import { HttpResponse } from '../interfaces/generic';
-import { validationResult } from 'express-validator';
-import { IEditableUser } from '../models/user';
+// import User, { IEditableUser } from '../models/user';
 import { generateUploadURL } from '../utils/storage/utils';
 import DBTransactions from '../utils/db/transactions';
 import { ISkillSet } from '../models/skills';
@@ -14,6 +13,54 @@ import { getExpandedProjectCollaborators, getExpandedUserSkillSetEndorsers } fro
 import { IProject } from '../models/projects';
 import { IExperience } from '../models/experience';
 import { ICertification } from '../models/certifications';
+// import { IComment } from '../models/m-user';
+import Comment from '../models/user';
+import User, { IEditableUser } from '../models/user';
+import { validationResult } from 'express-validator';
+
+const mongoTest1 = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    console.log('----------------------it came here--------------------------------');
+    const userId = req.params.user_id;
+    // const authUser= req.authUser;
+    // if (!authUser) {
+    //     throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+    // }
+    const data = { userId: userId, message: 'my first entry' };
+    const mongo = new Comment(data);
+    const mongoData = await mongo.save();
+    const response: HttpResponse = {
+        success: true,
+        data: mongoData,
+    };
+    return res.status(200).json(response);
+};
+
+const getUserProfileM = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userId = req.params.user_id;
+    // const authUser = req.authUser;
+    // if (!authUser) {
+    //     throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+    // }
+    const userDocument = await User.findById({
+        id: userId,
+    });
+    // const user = await DBQueries.getUserById(userId as string);
+    const response: HttpResponse = {
+        success: true,
+        data: userDocument,
+    };
+    return res.status(200).json(response);
+};
 
 const getUserProfile = async (
     req: Request,
@@ -100,17 +147,27 @@ const postFollowingForUser = async (
     if (follow) {
         throw new HttpError(ERROR_MESSAGES.USER_FOLLOWING, 400, ERROR_CODES.REDUNDANT_ERROR);
     } else {
-        await dynamoose.transaction([
-            DBTransactions.createFollowTransaction(userId, followeeId),
-            DBTransactions.incrementUserFollowResourceCountTransaction(userId, true),
-            DBTransactions.incrementUserFollowResourceCountTransaction(followeeId, false),
-        ]);
-        const user = await DBQueries.getUserById(userId);
-        const response: HttpResponse = {
-            success: true,
-            data: user,
-        };
-        return res.status(200).json(response);
+        const created = await DBTransactions.createFollowTransaction(userId, followeeId); //execute as a aquery
+        if (created) {
+            const session = await User.startSession();
+            session.startTransaction();
+            DBTransactions.incrementUserFollowResourceCountTransaction(userId, true, session);
+            DBTransactions.incrementUserFollowResourceCountTransaction(followeeId, false, session);
+            const user = await DBQueries.getUserById(userId);
+            const response: HttpResponse = {
+                success: true,
+                data: user,
+            };
+            await session.commitTransaction();
+            session.endSession();
+            return res.status(200).json(response);
+        } else {
+            const response: HttpResponse = {
+                success: true,
+                data: 'something went wrong',
+            };
+            return res.status(500).json(response);
+        }
     }
 };
 
@@ -133,17 +190,27 @@ const deleteFollowingForUser = async (
     if (!follow) {
         throw new HttpError(ERROR_MESSAGES.USER_NOT_FOLLOWING, 400, ERROR_CODES.REDUNDANT_ERROR);
     } else {
-        await dynamoose.transaction([
-            DBTransactions.deleteFollowTransaction(follow.id),
-            DBTransactions.decrementUserFollowResourceCountTransaction(userId, true),
-            DBTransactions.decrementUserFollowResourceCountTransaction(followeeId, false),
-        ]);
-        const user = await DBQueries.getUserById(userId);
-        const response: HttpResponse = {
-            success: true,
-            data: user,
-        };
-        return res.status(200).json(response);
+        const deleted = await DBTransactions.deleteFollowTransaction(follow.id);
+        if (deleted) {
+            const session = await User.startSession();
+            session.startTransaction();
+            DBTransactions.decrementUserFollowResourceCountTransaction(userId, true, session);
+            DBTransactions.decrementUserFollowResourceCountTransaction(followeeId, false, session);
+            const user = await DBQueries.getUserById(userId);
+            const response: HttpResponse = {
+                success: true,
+                data: user,
+            };
+            await session.commitTransaction();
+            session.endSession();
+            return res.status(200).json(response);
+        } else {
+            const response: HttpResponse = {
+                success: true,
+                data: 'not able to delete the following for user',
+            };
+            return res.status(500).json(response);
+        }
     }
 };
 
@@ -183,113 +250,118 @@ const postCreateConnectionForUser = async (
     }
 };
 
-const patchConfirmConnectionForUser = async (
-    req: Request,
-    res: Response,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _next: NextFunction
-) => {
-    const userId = req.params.user_id;
-    const connecteeId = req.params.connectee_id;
-    const authUser = req.authUser;
-    const connectedAt = Date.now();
-    if (!authUser || authUser.id !== userId) {
-        throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
-    }
-    if (userId === connecteeId) {
-        throw new HttpError(ERROR_MESSAGES.USER_REQUEST_SELF, 400, ERROR_CODES.REDUNDANT_ERROR);
-    }
-    const userInitiatedConnection = await DBQueries.getConnection(userId, connecteeId);
-    const connecteeIntiatedConnection = await DBQueries.getConnection(connecteeId, userId);
-    if (!userInitiatedConnection || !connecteeIntiatedConnection) {
-        throw new HttpError(ERROR_MESSAGES.USER_NO_CONNECTION_REQUEST, 404, ERROR_CODES.RESOURCE_NOT_FOUND);
-    }
-    if (userInitiatedConnection.isConnected || connecteeIntiatedConnection.isConnected) {
-        throw new HttpError(ERROR_MESSAGES.USER_CONNECTED, 400, ERROR_CODES.REDUNDANT_ERROR);
-    }
-    if (
-        userInitiatedConnection.connectionInitiatedBy === userId ||
-        connecteeIntiatedConnection.connectionInitiatedBy === userId
-    ) {
-        throw new HttpError(ERROR_MESSAGES.USER_CANNOT_CONFIRM, 403, ERROR_CODES.AUTHORIZATION_ERROR);
-    }
-    const userFollowing = await DBQueries.getFollow(userId, connecteeId);
-    const connecteeFollowing = await DBQueries.getFollow(connecteeId, userId);
-    await dynamoose.transaction([
-        DBTransactions.confirmConnectionTransaction(userInitiatedConnection.id, connectedAt),
-        DBTransactions.confirmConnectionTransaction(connecteeIntiatedConnection.id, connectedAt),
-        DBTransactions.incrementUserConnectionCountTransaction(userId),
-        DBTransactions.incrementUserConnectionCountTransaction(connecteeId),
-    ]);
-    await dynamoose.transaction([
-        ...(!userFollowing ? [DBTransactions.createFollowTransaction(userId, connecteeId)] : []),
-        ...(!connecteeFollowing ? [DBTransactions.createFollowTransaction(connecteeId, userId)] : []),
-    ]);
-    await dynamoose.transaction([
-        ...(!userFollowing ? [DBTransactions.incrementUserFollowResourceCountTransaction(userId, true)] : []),
-        ...(!connecteeFollowing
-            ? [DBTransactions.incrementUserFollowResourceCountTransaction(connecteeId, false)]
-            : []),
-    ]);
-    await dynamoose.transaction([
-        ...(!userFollowing ? [DBTransactions.incrementUserFollowResourceCountTransaction(userId, false)] : []),
-        ...(!connecteeFollowing ? [DBTransactions.incrementUserFollowResourceCountTransaction(connecteeId, true)] : []),
-    ]);
-    const user = await DBQueries.getUserById(userId);
-    const response: HttpResponse = {
-        success: true,
-        data: user,
-    };
-    return res.status(200).json(response);
-};
+// const patchConfirmConnectionForUser = async (
+//     req: Request,
+//     res: Response,
+//     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+//     _next: NextFunction
+// ) => {
+//     const userId = req.params.user_id;
+//     const connecteeId = req.params.connectee_id;
+//     const authUser = req.authUser;
+//     const connectedAt = Date.now();
+//     if (!authUser || authUser.id !== userId) {
+//         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+//     }
+//     if (userId === connecteeId) {
+//         throw new HttpError(ERROR_MESSAGES.USER_REQUEST_SELF, 400, ERROR_CODES.REDUNDANT_ERROR);
+//     }
+//     const userInitiatedConnection = await DBQueries.getConnection(userId, connecteeId);
+//     const connecteeIntiatedConnection = await DBQueries.getConnection(connecteeId, userId);
+//     if (!userInitiatedConnection || !connecteeIntiatedConnection) {
+//         throw new HttpError(ERROR_MESSAGES.USER_NO_CONNECTION_REQUEST, 404, ERROR_CODES.RESOURCE_NOT_FOUND);
+//     }
+//     if (userInitiatedConnection.isConnected || connecteeIntiatedConnection.isConnected) {
+//         throw new HttpError(ERROR_MESSAGES.USER_CONNECTED, 400, ERROR_CODES.REDUNDANT_ERROR);
+//     }
+//     if (
+//         userInitiatedConnection.connectionInitiatedBy === userId ||
+//         connecteeIntiatedConnection.connectionInitiatedBy === userId
+//     ) {
+//         throw new HttpError(ERROR_MESSAGES.USER_CANNOT_CONFIRM, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+//     }
+//     const userFollowing = await DBQueries.getFollow(userId, connecteeId);
+//     const connecteeFollowing = await DBQueries.getFollow(connecteeId, userId);
 
-const deleteConnectionForUser = async (
-    req: Request,
-    res: Response,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _next: NextFunction
-) => {
-    const userId = req.params.user_id;
-    const connecteeId = req.params.connectee_id;
-    const authUser = req.authUser;
-    if (!authUser || authUser.id !== userId) {
-        throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
-    }
-    if (userId === connecteeId) {
-        throw new HttpError(ERROR_MESSAGES.USER_REQUEST_SELF, 400, ERROR_CODES.REDUNDANT_ERROR);
-    }
-    const userInitiatedConnection = await DBQueries.getConnection(userId, connecteeId);
-    const connecteeIntiatedConnection = await DBQueries.getConnection(connecteeId, userId);
-    if (!userInitiatedConnection || !connecteeIntiatedConnection) {
-        throw new HttpError(ERROR_MESSAGES.USER_NO_CONNECTION_REQUEST, 404, ERROR_CODES.RESOURCE_NOT_FOUND);
-    }
-    const userFollowing = await DBQueries.getFollow(userId, connecteeId);
-    const connecteeFollowing = await DBQueries.getFollow(connecteeId, userId);
-    await dynamoose.transaction([
-        DBTransactions.deleteConnectionTransaction(userInitiatedConnection.id),
-        DBTransactions.deleteConnectionTransaction(connecteeIntiatedConnection.id),
-        DBTransactions.decrementUserConnectionCountTransaction(userId),
-        DBTransactions.decrementUserConnectionCountTransaction(connecteeId),
-    ]);
-    await dynamoose.transaction([
-        ...(userFollowing ? [DBTransactions.deleteFollowTransaction(userFollowing.id)] : []),
-        ...(connecteeFollowing ? [DBTransactions.deleteFollowTransaction(connecteeFollowing.id)] : []),
-    ]);
-    await dynamoose.transaction([
-        ...(userFollowing ? [DBTransactions.decrementUserFollowResourceCountTransaction(userId, true)] : []),
-        ...(connecteeFollowing ? [DBTransactions.decrementUserFollowResourceCountTransaction(connecteeId, false)] : []),
-    ]);
-    await dynamoose.transaction([
-        ...(userFollowing ? [DBTransactions.decrementUserFollowResourceCountTransaction(userId, false)] : []),
-        ...(connecteeFollowing ? [DBTransactions.decrementUserFollowResourceCountTransaction(connecteeId, true)] : []),
-    ]);
-    const user = await DBQueries.getUserById(userId);
-    const response: HttpResponse = {
-        success: true,
-        data: user,
-    };
-    return res.status(200).json(response);
-};
+//     await dynamoose.transaction([
+//         DBTransactions.confirmConnectionTransaction(userInitiatedConnection.id, connectedAt),
+//         DBTransactions.confirmConnectionTransaction(connecteeIntiatedConnection.id, connectedAt),
+//         DBTransactions.incrementUserConnectionCountTransaction(userId),
+//         DBTransactions.incrementUserConnectionCountTransaction(connecteeId),
+//     ]);
+//     await dynamoose.transaction([
+//         ...(!userFollowing ? [DBTransactions.createFollowTransaction(userId, connecteeId)] : []),
+//         ...(!connecteeFollowing ? [DBTransactions.createFollowTransaction(connecteeId, userId)] : []),
+//     ]);
+//     const session = await User.startSession();
+//     session.startTransaction();
+//     await dynamoose.transaction([
+//         ...(!userFollowing ? [DBTransactions.incrementUserFollowResourceCountTransaction(userId, true,session)] : []),
+//         ...(!connecteeFollowing
+//             ? [DBTransactions.incrementUserFollowResourceCountTransaction(connecteeId, false,session)]
+//             : []),
+//     ]);
+//     await dynamoose.transaction([
+//         ...(!userFollowing ? [DBTransactions.incrementUserFollowResourceCountTransaction(userId, false)] : []),
+//         ...(!connecteeFollowing ? [DBTransactions.incrementUserFollowResourceCountTransaction(connecteeId, true)] : []),
+//     ]);
+//     await session.commitTransaction();
+//     session.endSession();
+//     const user = await DBQueries.getUserById(userId);
+//     const response: HttpResponse = {
+//         success: true,
+//         data: user,
+//     };
+//     return res.status(200).json(response);
+// };
+
+// const deleteConnectionForUser = async (
+//     req: Request,
+//     res: Response,
+//     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+//     _next: NextFunction
+// ) => {
+//     const userId = req.params.user_id;
+//     const connecteeId = req.params.connectee_id;
+//     const authUser = req.authUser;
+//     if (!authUser || authUser.id !== userId) {
+//         throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+//     }
+//     if (userId === connecteeId) {
+//         throw new HttpError(ERROR_MESSAGES.USER_REQUEST_SELF, 400, ERROR_CODES.REDUNDANT_ERROR);
+//     }
+//     const userInitiatedConnection = await DBQueries.getConnection(userId, connecteeId);
+//     const connecteeIntiatedConnection = await DBQueries.getConnection(connecteeId, userId);
+//     if (!userInitiatedConnection || !connecteeIntiatedConnection) {
+//         throw new HttpError(ERROR_MESSAGES.USER_NO_CONNECTION_REQUEST, 404, ERROR_CODES.RESOURCE_NOT_FOUND);
+//     }
+//     const userFollowing = await DBQueries.getFollow(userId, connecteeId);
+//     const connecteeFollowing = await DBQueries.getFollow(connecteeId, userId);
+//     await dynamoose.transaction([
+//         DBTransactions.deleteConnectionTransaction(userInitiatedConnection.id),
+//         DBTransactions.deleteConnectionTransaction(connecteeIntiatedConnection.id),
+//         DBTransactions.decrementUserConnectionCountTransaction(userId),
+//         DBTransactions.decrementUserConnectionCountTransaction(connecteeId),
+//     ]);
+//     await dynamoose.transaction([
+//         ...(userFollowing ? [DBTransactions.deleteFollowTransaction(userFollowing.id)] : []),
+//         ...(connecteeFollowing ? [DBTransactions.deleteFollowTransaction(connecteeFollowing.id)] : []),
+//     ]);
+//     await dynamoose.transaction([
+//         ...(userFollowing ? [DBTransactions.decrementUserFollowResourceCountTransaction(userId, true)] : []),
+//         ...(connecteeFollowing ? [DBTransactions.decrementUserFollowResourceCountTransaction(connecteeId, false)] : []),
+//     ]);
+//     await dynamoose.transaction([
+//         ...(userFollowing ? [DBTransactions.decrementUserFollowResourceCountTransaction(userId, false)] : []),
+//         ...(connecteeFollowing ? [DBTransactions.decrementUserFollowResourceCountTransaction(connecteeId, true)] : []),
+//     ]);
+//     const user = await DBQueries.getUserById(userId);
+//     const response: HttpResponse = {
+//         success: true,
+//         data: user,
+//     };
+//     return res.status(200).json(response);
+// };
 
 const getUserSkills = async (
     req: Request,
@@ -450,36 +522,37 @@ const getUserUploadSignedURL = async (
     res.status(200).send(response);
 };
 
-const getUserSearch = async (
-    req: Request,
-    res: Response,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _next: NextFunction
-) => {
-    const searchTerm = req.query.search as string;
-    const limit = Number(req.query.limit as string);
-    const dDBAssistStartFromId = req.query.dDBAssistStartFromId as string | undefined;
-    const { users: data, dDBPagination } = await DBQueries.searchUsersByName(searchTerm, limit, dDBAssistStartFromId);
-    const response: HttpResponse = {
-        success: true,
-        data: data,
-        dDBPagination,
-    };
-    return res.status(200).json(response);
-};
+// const getUserSearch = async (
+//     req: Request,
+//     res: Response,
+//     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+//     _next: NextFunction
+// ) => {
+//     const searchTerm = req.query.search as string;
+//     const limit = Number(req.query.limit as string);
+//     const dDBAssistStartFromId = req.query.dDBAssistStartFromId as string | undefined;
+//     const { users: data, dDBPagination } = await DBQueries.searchUsersByName(searchTerm, limit, dDBAssistStartFromId);
+//     const response: HttpResponse = {
+//         success: true,
+//         data: data,
+//         dDBPagination,
+//     };
+//     return res.status(200).json(response);
+// };
 
 const USER_CONTROLLER = {
+    getUserProfileM: asyncHandler(getUserProfileM),
     getUserProfile: asyncHandler(getUserProfile),
     patchUserProfile: asyncHandler(patchUserProfile),
     postCreateConnectionForUser: asyncHandler(postCreateConnectionForUser),
-    patchConfirmConnectionForUser: asyncHandler(patchConfirmConnectionForUser),
-    deleteConnectionForUser: asyncHandler(deleteConnectionForUser),
+    // patchConfirmConnectionForUser: asyncHandler(patchConfirmConnectionForUser),
+    // deleteConnectionForUser: asyncHandler(deleteConnectionForUser),
     postFollowingForUser: asyncHandler(postFollowingForUser),
     deleteFollowingForUser: asyncHandler(deleteFollowingForUser),
     getUserSkills: asyncHandler(getUserSkills),
     putUserSkills: asyncHandler(putUserSkills),
     getUserUploadSignedURL: asyncHandler(getUserUploadSignedURL),
-    getUserSearch: asyncHandler(getUserSearch),
+    // getUserSearch: asyncHandler(getUserSearch),
     getUserProjects: asyncHandler(getUserProjects),
     putUserProjects: asyncHandler(putUserProjects),
     getUserExperiences: asyncHandler(getUserExperiences),
@@ -487,6 +560,7 @@ const USER_CONTROLLER = {
     getUserCertifications: asyncHandler(getUserCertifications),
     putUserCertifications: asyncHandler(putUserCertifications),
     postUserFeedback: asyncHandler(postUserFeedback),
+    mongoTest1: asyncHandler(mongoTest1),
 };
 
 export default USER_CONTROLLER;

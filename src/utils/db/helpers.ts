@@ -19,7 +19,7 @@ export const getNewUserModelFromJWTUserPayload = async (
     const newExperience: IExperiences = await DBQueries.createExperiences();
     const newSkills: ISkills = await DBQueries.createSkills();
     const newProjects: IProjects = await DBQueries.createProjects();
-    return {
+    const newUser: IUser = {
         id: v4(),
         aboutUser: '',
         backgroundImageUrl: '',
@@ -43,6 +43,7 @@ export const getNewUserModelFromJWTUserPayload = async (
         experiencesRefId: newExperience.id,
         certificationsRefId: newCertification.id,
     };
+    return newUser;
 };
 
 export const getMinifiedUser = (user: IUser): IMinifiedUser | undefined => {

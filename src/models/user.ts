@@ -1,9 +1,7 @@
-import * as dynamoose from 'dynamoose';
-import { ValueType } from 'dynamoose/dist/Schema';
+// import { v4 } from 'uuid';
+import mongoose, { Schema } from 'mongoose';
 import { TABLE } from '../constants/db';
-import { IDynamooseDocument } from '../interfaces/generic';
 
-const validateIfNumberIsEpoch = (val: ValueType) => typeof val === 'number' && !!new Date(val);
 export interface IUserExperience {
     company: string;
     isPresentlyWorking: boolean;
@@ -14,39 +12,40 @@ export interface IUserExperience {
     startDate: number;
     title: string;
 }
-const UserExperienceSchema = new dynamoose.Schema({
+const UserExperienceSchema: Schema = new Schema({
     company: { type: String },
     isPresentlyWorking: { type: Boolean },
     description: { type: String },
     employmentType: { type: String },
-    endDate: { type: Number, validate: validateIfNumberIsEpoch },
+    endDate: { type: Date },
     location: { type: String },
-    startDate: { type: Number, validate: validateIfNumberIsEpoch },
+    startDate: { type: Date },
     title: { type: String },
 });
 
 export interface IUserConnections {
     isPrivate: boolean;
 }
-const UserPreferenceConnectionsScehma = new dynamoose.Schema({
+const UserPreferenceConnectionsScehma = new Schema({
     isPrivate: { type: Boolean },
 });
 
 export interface IUserPreference {
     connections: IUserConnections;
 }
-const UserPreferenceSchema = new dynamoose.Schema({
+const UserPreferenceSchema = new Schema({
     connections: { type: Object, schema: UserPreferenceConnectionsScehma },
 });
 
 export interface IUserSearchFields {
     name: string;
 }
-const UserSearchfieldsSchema = new dynamoose.Schema({
+const UserSearchfieldsSchema = new Schema({
     name: { type: String },
 });
 
 export interface IUser {
+    // _id: string;
     id: string;
     aboutUser: string;
     backgroundImageUrl: string;
@@ -71,14 +70,15 @@ export interface IUser {
     certificationsRefId: string;
 }
 // Changes in UserSchemaObj must be updated in IUser
-const UserSchema = new dynamoose.Schema(
+const UserSchema = new Schema(
     {
+        // _id: new mongoose.Types.ObjectId(),
         id: { type: String, hashKey: true },
         aboutUser: { type: String },
         backgroundImageUrl: { type: String },
         connectionCount: { type: Number },
         currentPosition: { type: String },
-        dateOfBirth: { type: Number, validate: validateIfNumberIsEpoch },
+        dateOfBirth: { type: Date },
         displayPictureUrl: { type: String },
         email: { type: String },
         experieces: { type: Array, schema: Array.of(UserExperienceSchema) },
@@ -100,7 +100,7 @@ const UserSchema = new dynamoose.Schema(
         timestamps: true,
     }
 );
-const User = dynamoose.model<IDynamooseDocument<IUser>>(TABLE.USERS, UserSchema);
+export default mongoose.model<IUser>(TABLE.USERS, UserSchema);
 
 export const READABLE_USER_PROPERTIES = [
     'id',
@@ -114,4 +114,21 @@ export const READABLE_USER_PROPERTIES = [
 
 export type IEditableUser = Partial<Omit<IUser, typeof READABLE_USER_PROPERTIES[number]>>;
 
-export default User;
+// export interface IComment extends Document {
+//     // _id: string;
+//     userId: string;
+//     message: string;
+// }
+
+// const CommentSchema: Schema = new Schema(
+//     {
+//         // _id: new mongoose.Types.ObjectId(),
+//         userId: { type: String },
+//         message: { type: String },
+//     },
+//     {
+//         timestamps: true,
+//     }
+// );
+
+// export default mongoose.model<IComment>('Comment', CommentSchema);

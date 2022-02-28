@@ -12,6 +12,7 @@ const userSignedURLRouter = express.Router({ mergeParams: true });
 const userExperiencesRouter = express.Router({ mergeParams: true });
 const userCertificationsRouter = express.Router({ mergeParams: true });
 const userFeedbackRouter = express.Router({ mergeParams: true });
+const userMongoTest = express.Router({ mergeParams: true });
 
 USER_ROUTER.use('/:user_id/followee', userFollowingRouter);
 USER_ROUTER.use('/:user_id/connectee', userConnectionsRouter);
@@ -21,6 +22,9 @@ USER_ROUTER.use('/:user_id/signedURL', userSignedURLRouter);
 USER_ROUTER.use('/:user_id/experiences', userExperiencesRouter);
 USER_ROUTER.use('/:user_id/certifications', userCertificationsRouter);
 USER_ROUTER.use('/:user_id/feedback', userFeedbackRouter);
+USER_ROUTER.use('/:user_id/mongo', userMongoTest);
+
+userMongoTest.route('/').post(USER_CONTROLLER.mongoTest1);
 
 userFeedbackRouter.route('/').post(USER_CONTROLLER.postUserFeedback);
 
@@ -28,11 +32,9 @@ userFollowingRouter
     .route('/:followee_id')
     .post(USER_CONTROLLER.postFollowingForUser)
     .delete(USER_CONTROLLER.deleteFollowingForUser);
-userConnectionsRouter
-    .route('/:connectee_id')
-    .post(USER_CONTROLLER.postCreateConnectionForUser)
-    .patch(USER_CONTROLLER.patchConfirmConnectionForUser)
-    .delete(USER_CONTROLLER.deleteConnectionForUser);
+userConnectionsRouter.route('/:connectee_id').post(USER_CONTROLLER.postCreateConnectionForUser);
+// .patch(USER_CONTROLLER.patchConfirmConnectionForUser)
+// .delete(USER_CONTROLLER.deleteConnectionForUser);
 userSkillsRouter.route('/').get(USER_CONTROLLER.getUserSkills).put([body().isArray()], USER_CONTROLLER.putUserSkills);
 
 userCertificationsRouter
@@ -53,7 +55,7 @@ userExperiencesRouter
 userSignedURLRouter.route('/').get(USER_CONTROLLER.getUserUploadSignedURL);
 
 USER_ROUTER.route('/:user_id')
-    .get(USER_CONTROLLER.getUserProfile)
+    .get(USER_CONTROLLER.getUserProfileM)
     .patch(
         [
             check(READABLE_USER_PROPERTIES as unknown as string[])
@@ -63,6 +65,6 @@ USER_ROUTER.route('/:user_id')
         USER_CONTROLLER.patchUserProfile
     );
 
-USER_ROUTER.route('/').get(USER_CONTROLLER.getUserSearch);
+// USER_ROUTER.route('/').get(USER_CONTROLLER.getUserSearch);
 
 export default USER_ROUTER;
