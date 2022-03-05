@@ -6,12 +6,12 @@ import errorHandler from './middlewares/errorHandler';
 import loggerHandler from './middlewares/loggerHandler';
 import AUTH_ROUTER from './routes/auth';
 import USER_ROUTER from './routes/user';
-import initDynamoDB from './utils/db/client';
+import { initDynamoDB, initMongoDB } from './utils/db/client';
 import routeExcludeHandler from './middlewares/routeExcludeHandler';
-
 const APP = express();
 
 initDynamoDB();
+initMongoDB();
 
 // Middleware
 APP.use(cors({ origin: '*', methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'], preflightContinue: false }));

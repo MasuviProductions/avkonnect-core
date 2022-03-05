@@ -3,52 +3,69 @@ import { v4 } from 'uuid';
 import Skills, { ISkills, ISkillSet } from '../../models/skills';
 import Connection, { IConnection } from '../../models/connection';
 import Follow, { IFollow } from '../../models/follow';
-import User, { IEditableUser, IUser } from '../../models/user';
-import { fetchDDBPaginatedDocuments, IFollowResourceValues } from './helpers';
-import { HttpDDBResponsePagination } from '../../interfaces/generic';
+import { fetchMongoDBPaginatedDocuments, IFollowResourceValues } from './helpers';
 import Projects, { IProject, IProjects } from '../../models/projects';
 import Experiences, { IExperience, IExperiences } from '../../models/experience';
 import Certifications, { ICertifications, ICertification } from '../../models/certifications';
 import Feedback, { IFeedback } from '../../models/feedbacks';
+import User, { IUser, IEditableUser } from '../../models/user';
+import { HttpResponsePagination } from '../../interfaces/generic';
+import { HttpError } from '../error';
+import { ERROR_MESSAGES } from '../../constants/errors';
 
-const getAuthUserByEmail = async (email: string): Promise<IUser> => {
-    const userDocuments = await User.scan({
+const getAuthUserByEmail = async (email: string): Promise<IUser | undefined> => {
+    const user: IUser | null = await User.findOne({
         email: email,
-    })
-        .attributes(['id', 'email'])
-        .exec();
-    return userDocuments[0];
+    }).select({ name: 1, email: 1, id: 1, _id: 0 });
+    if (!user) {
+        return;
+    }
+    return user;
 };
 
 const getUserById = async (id: string): Promise<IUser> => {
-    const userDocument = await User.get({
+    const user: IUser | null = await User.findOne({
         id: id,
     });
-    return userDocument;
+    if (!user) {
+        throw new HttpError(ERROR_MESSAGES.RESOURCE_NOT_FOUND, 404);
+    }
+    return user;
 };
 
 const getUserInfoForIds = async (idList: Set<string>): Promise<Array<Partial<IUser>>> => {
-    const usersDocuments = await User.scan(new dynamoose.Condition('id').in(Array.from(idList)))
-        .attributes(['id', 'name', 'headline', 'displayPictureUrl', 'email', 'location', 'gender'])
-        .exec();
-    return usersDocuments as Array<Partial<IUser>>;
+    const users: Array<Partial<IUser>> = await User.find({
+        id: {
+            $in: Array.from(idList),
+        },
+    }).select({
+        id: 1,
+        name: 1,
+        headline: 1,
+        displayPictureUrl: 1,
+        email: 1,
+        location: 1,
+        gender: 1,
+        _id: 0,
+    });
+    return users;
 };
 
 const searchUsersByName = async (
     searchString: string,
-    limit: number,
-    dDBAssistStartFromId?: string
-): Promise<{ users: Array<Partial<IUser>>; dDBPagination: HttpDDBResponsePagination }> => {
-    const scanInitialUser = User.scan(
-        new dynamoose.Condition().filter('searchFields.name').beginsWith(decodeURI(searchString.toLowerCase()))
+    page: number,
+    limit: number
+): Promise<{ users: Array<Partial<IUser>>; pagination: HttpResponsePagination }> => {
+    const searchUser = User.find({ name: { $regex: `^${searchString}`, $options: 'i' } }).sort({ name: 1 });
+    const resultAttributes = ['id', 'name', 'headline', 'displayPictureUrl'];
+    const { documents: users, pagination } = await fetchMongoDBPaginatedDocuments<IUser>(
+        searchUser,
+        resultAttributes,
+        page,
+        limit
     );
-    const { documents, dDBPagination } = await fetchDDBPaginatedDocuments<IUser>(
-        scanInitialUser,
-        ['id', 'name', 'headline', 'displayPictureUrl'],
-        limit,
-        dDBAssistStartFromId
-    );
-    return { users: documents, dDBPagination };
+
+    return { users, pagination };
 };
 
 const createFeedback = async (
@@ -71,12 +88,24 @@ const createFeedback = async (
 
 const createUser = async (user: IUser): Promise<IUser> => {
     const myUser = new User(user);
-    await myUser.save();
-    return user;
+    const createdUser: IUser = await myUser.save();
+    return createdUser;
 };
 
 const updateUser = async (userId: string, user: IEditableUser): Promise<IUser> => {
-    return await User.update({ id: userId }, { ...user });
+    const updatedUser: IUser | null = await User.findOneAndUpdate({ id: { $eq: userId } }, user);
+    if (!updatedUser) {
+        throw new HttpError(ERROR_MESSAGES.RESOURCE_NOT_FOUND, 404);
+    }
+    return updatedUser;
+};
+
+const updateUserConnectionCountQuery = (userId: string, factor: number) => {
+    return User.updateOne({ id: userId }, { $inc: { connectionCount: factor } });
+};
+
+const updateUserFollowCountQuery = (userId: string, followType: 'followeeCount' | 'followerCount', factor: number) => {
+    return User.updateOne({ id: userId }, { $inc: { [followType]: factor } });
 };
 
 const getUserFollowResources = async (
@@ -201,6 +230,8 @@ const DBQueries = {
     getCertifications,
     updateCertifications,
     createFeedback,
+    updateUserConnectionCountQuery,
+    updateUserFollowCountQuery,
 };
 
 export default DBQueries;

@@ -8,12 +8,13 @@ export interface HttpResponseError {
 }
 
 export interface HttpResponsePagination {
-    total: number;
+    totalCount: number;
+    totalPages: number;
     page: number;
     count: number;
 }
 
-export interface HttpDDBResponsePagination {
+export interface HttpDynamoDBResponsePagination {
     nextSearchStartFromId?: string;
     count: number;
 }
@@ -23,5 +24,5 @@ export interface HttpResponse {
     data?: unknown;
     error?: HttpResponseError;
     pagination?: HttpResponsePagination;
-    dDBPagination?: HttpDDBResponsePagination;
+    dDBPagination?: HttpDynamoDBResponsePagination;
 }
