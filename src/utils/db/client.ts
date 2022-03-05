@@ -1,4 +1,5 @@
 import dynamoose from 'dynamoose';
+import mongoose from 'mongoose';
 import ENV from '../../constants/env';
 
 const initDynamoDB = () => {
@@ -10,4 +11,14 @@ const initDynamoDB = () => {
     dynamoose.aws.ddb.set(DYNAMOOSE_CLIENT);
 };
 
-export default initDynamoDB;
+const initMongoDB = async () => {
+    const options = {
+        useUnifiedTopology: true,
+        useNewUrlParser: true,
+        keepAlive: true,
+    };
+
+    await mongoose.connect(ENV.MONGODB_URL, options);
+};
+
+export { initDynamoDB, initMongoDB };

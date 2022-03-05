@@ -15,6 +15,7 @@ const ENV = {
             ISSUER_URL: process.env.COGNITO_ISSUER_URL,
         },
     },
+    MONGODB_URL: process.env.MONGODB_URL as string,
 };
 
 export default ENV;

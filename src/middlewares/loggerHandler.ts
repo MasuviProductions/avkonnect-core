@@ -3,7 +3,7 @@ import LOGGER from '../utils/logger';
 import asyncHandler from './asyncHandler';
 
 const loggerHandler = asyncHandler(async (req: Request, _res: Response, next: NextFunction) => {
-    LOGGER.info(JSON.stringify({ url: req.url, headers: req.headers, body: req.body }));
+    LOGGER.info(JSON.stringify({ url: req.url, body: req.body }));
     next();
 });
 
