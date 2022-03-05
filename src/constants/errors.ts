@@ -10,6 +10,7 @@ export const ERROR_CODES = {
     THIRD_PARTY_ERROR: 'third_party_error',
     REDUNDANT_ERROR: 'action_redundant',
     UPLOAD_ERROR: 'upload_error',
+    TRANSACTION_ERROR: 'transaction_error',
 };
 
 export const ERROR_MESSAGES = {
@@ -33,4 +34,5 @@ export const ERROR_MESSAGES = {
     USER_CANNOT_CONFIRM: 'Requesting resource cannot confirm connection',
     USER_SKILL_ENDORSED: 'Skill is already endorsed by requesting resource',
     USER_SKILL_UNENDORSED: 'Skill is already unendorsed by requesting resource',
+    TRANSACTION_ERROR: 'Something went wrong while executing database transaction',
 };

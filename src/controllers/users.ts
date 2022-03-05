@@ -1,11 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
-import dynamoose from 'dynamoose';
 import { ERROR_CODES, ERROR_MESSAGES } from '../constants/errors';
 import asyncHandler from '../middlewares/asyncHandler';
 import DBQueries from '../utils/db/queries';
 import { HttpError } from '../utils/error';
 import { HttpResponse } from '../interfaces/generic';
-import { validationResult } from 'express-validator';
 import { IEditableUser } from '../models/user';
 import { generateUploadURL } from '../utils/storage/utils';
 import DBTransactions from '../utils/db/transactions';
@@ -14,6 +12,8 @@ import { getExpandedProjectCollaborators, getExpandedUserSkillSetEndorsers } fro
 import { IProject } from '../models/projects';
 import { IExperience } from '../models/experience';
 import { ICertification } from '../models/certifications';
+import { validationResult } from 'express-validator';
+import { performDynamoDBTransactions, performMongoDBTransactions } from '../utils/db/helpers';
 
 const getUserProfile = async (
     req: Request,
@@ -100,16 +100,18 @@ const postFollowingForUser = async (
     if (follow) {
         throw new HttpError(ERROR_MESSAGES.USER_FOLLOWING, 400, ERROR_CODES.REDUNDANT_ERROR);
     } else {
-        await dynamoose.transaction([
-            DBTransactions.createFollowTransaction(userId, followeeId),
-            DBTransactions.incrementUserFollowResourceCountTransaction(userId, true),
-            DBTransactions.incrementUserFollowResourceCountTransaction(followeeId, false),
+        await performDynamoDBTransactions([DBTransactions.createFollowTransaction(userId, followeeId)]);
+
+        await performMongoDBTransactions([
+            DBQueries.updateUserFollowCountQuery(userId, 'followeeCount', 1),
+            DBQueries.updateUserFollowCountQuery(followeeId, 'followerCount', 1),
         ]);
         const user = await DBQueries.getUserById(userId);
         const response: HttpResponse = {
             success: true,
             data: user,
         };
+
         return res.status(200).json(response);
     }
 };
@@ -133,11 +135,13 @@ const deleteFollowingForUser = async (
     if (!follow) {
         throw new HttpError(ERROR_MESSAGES.USER_NOT_FOLLOWING, 400, ERROR_CODES.REDUNDANT_ERROR);
     } else {
-        await dynamoose.transaction([
-            DBTransactions.deleteFollowTransaction(follow.id),
-            DBTransactions.decrementUserFollowResourceCountTransaction(userId, true),
-            DBTransactions.decrementUserFollowResourceCountTransaction(followeeId, false),
+        await performDynamoDBTransactions([DBTransactions.deleteFollowTransaction(follow.id)]);
+
+        await performMongoDBTransactions([
+            DBQueries.updateUserFollowCountQuery(userId, 'followeeCount', -1),
+            DBQueries.updateUserFollowCountQuery(followeeId, 'followerCount', -1),
         ]);
+
         const user = await DBQueries.getUserById(userId);
         const response: HttpResponse = {
             success: true,
@@ -170,7 +174,7 @@ const postCreateConnectionForUser = async (
         }
         throw new HttpError(ERROR_MESSAGES.USER_CONNECTION_REQUEST, 400, ERROR_CODES.REDUNDANT_ERROR);
     } else {
-        await dynamoose.transaction([
+        await performDynamoDBTransactions([
             DBTransactions.createUserConnectionTransaction(userId, connecteeId, true),
             DBTransactions.createUserConnectionTransaction(connecteeId, userId, false),
         ]);
@@ -215,26 +219,30 @@ const patchConfirmConnectionForUser = async (
     }
     const userFollowing = await DBQueries.getFollow(userId, connecteeId);
     const connecteeFollowing = await DBQueries.getFollow(connecteeId, userId);
-    await dynamoose.transaction([
+    await performDynamoDBTransactions([
         DBTransactions.confirmConnectionTransaction(userInitiatedConnection.id, connectedAt),
         DBTransactions.confirmConnectionTransaction(connecteeIntiatedConnection.id, connectedAt),
-        DBTransactions.incrementUserConnectionCountTransaction(userId),
-        DBTransactions.incrementUserConnectionCountTransaction(connecteeId),
     ]);
-    await dynamoose.transaction([
+    await performMongoDBTransactions([
+        DBQueries.updateUserConnectionCountQuery(userId, 1),
+        DBQueries.updateUserConnectionCountQuery(connecteeId, 1),
+    ]);
+
+    await performDynamoDBTransactions([
         ...(!userFollowing ? [DBTransactions.createFollowTransaction(userId, connecteeId)] : []),
         ...(!connecteeFollowing ? [DBTransactions.createFollowTransaction(connecteeId, userId)] : []),
     ]);
-    await dynamoose.transaction([
-        ...(!userFollowing ? [DBTransactions.incrementUserFollowResourceCountTransaction(userId, true)] : []),
-        ...(!connecteeFollowing
-            ? [DBTransactions.incrementUserFollowResourceCountTransaction(connecteeId, false)]
-            : []),
+
+    await performMongoDBTransactions([
+        ...(!userFollowing ? [DBQueries.updateUserFollowCountQuery(userId, 'followeeCount', 1)] : []),
+        ...(!userFollowing ? [DBQueries.updateUserFollowCountQuery(connecteeId, 'followerCount', 1)] : []),
     ]);
-    await dynamoose.transaction([
-        ...(!userFollowing ? [DBTransactions.incrementUserFollowResourceCountTransaction(userId, false)] : []),
-        ...(!connecteeFollowing ? [DBTransactions.incrementUserFollowResourceCountTransaction(connecteeId, true)] : []),
+
+    await performMongoDBTransactions([
+        ...(!connecteeFollowing ? [DBQueries.updateUserFollowCountQuery(userId, 'followerCount', 1)] : []),
+        ...(!connecteeFollowing ? [DBQueries.updateUserFollowCountQuery(connecteeId, 'followeeCount', 1)] : []),
     ]);
+
     const user = await DBQueries.getUserById(userId);
     const response: HttpResponse = {
         success: true,
@@ -265,24 +273,34 @@ const deleteConnectionForUser = async (
     }
     const userFollowing = await DBQueries.getFollow(userId, connecteeId);
     const connecteeFollowing = await DBQueries.getFollow(connecteeId, userId);
-    await dynamoose.transaction([
+
+    await performDynamoDBTransactions([
         DBTransactions.deleteConnectionTransaction(userInitiatedConnection.id),
         DBTransactions.deleteConnectionTransaction(connecteeIntiatedConnection.id),
-        DBTransactions.decrementUserConnectionCountTransaction(userId),
-        DBTransactions.decrementUserConnectionCountTransaction(connecteeId),
     ]);
-    await dynamoose.transaction([
+
+    if (userInitiatedConnection.isConnected) {
+        await performMongoDBTransactions([
+            DBQueries.updateUserConnectionCountQuery(userId, -1),
+            DBQueries.updateUserConnectionCountQuery(connecteeId, -1),
+        ]);
+    }
+
+    await performDynamoDBTransactions([
         ...(userFollowing ? [DBTransactions.deleteFollowTransaction(userFollowing.id)] : []),
         ...(connecteeFollowing ? [DBTransactions.deleteFollowTransaction(connecteeFollowing.id)] : []),
     ]);
-    await dynamoose.transaction([
-        ...(userFollowing ? [DBTransactions.decrementUserFollowResourceCountTransaction(userId, true)] : []),
-        ...(connecteeFollowing ? [DBTransactions.decrementUserFollowResourceCountTransaction(connecteeId, false)] : []),
+
+    await performMongoDBTransactions([
+        ...(userFollowing ? [DBQueries.updateUserFollowCountQuery(userId, 'followeeCount', -1)] : []),
+        ...(connecteeFollowing ? [DBQueries.updateUserFollowCountQuery(connecteeId, 'followerCount', -1)] : []),
     ]);
-    await dynamoose.transaction([
-        ...(userFollowing ? [DBTransactions.decrementUserFollowResourceCountTransaction(userId, false)] : []),
-        ...(connecteeFollowing ? [DBTransactions.decrementUserFollowResourceCountTransaction(connecteeId, true)] : []),
+
+    await performMongoDBTransactions([
+        ...(userFollowing ? [DBQueries.updateUserFollowCountQuery(userId, 'followerCount', -1)] : []),
+        ...(connecteeFollowing ? [DBQueries.updateUserFollowCountQuery(connecteeId, 'followeeCount', -1)] : []),
     ]);
+
     const user = await DBQueries.getUserById(userId);
     const response: HttpResponse = {
         success: true,
@@ -458,12 +476,12 @@ const getUserSearch = async (
 ) => {
     const searchTerm = req.query.search as string;
     const limit = Number(req.query.limit as string);
-    const dDBAssistStartFromId = req.query.dDBAssistStartFromId as string | undefined;
-    const { users: data, dDBPagination } = await DBQueries.searchUsersByName(searchTerm, limit, dDBAssistStartFromId);
+    const page = Number(req.query.page as string);
+    const { users: data, pagination } = await DBQueries.searchUsersByName(searchTerm, page, limit);
     const response: HttpResponse = {
         success: true,
         data: data,
-        dDBPagination,
+        pagination,
     };
     return res.status(200).json(response);
 };
