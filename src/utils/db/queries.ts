@@ -93,7 +93,7 @@ const createUser = async (user: IUser): Promise<IUser> => {
 };
 
 const updateUser = async (userId: string, user: IEditableUser): Promise<IUser> => {
-    const updatedUser: IUser | null = await User.findOneAndUpdate({ id: { $eq: userId } }, user);
+    const updatedUser: IUser | null = await User.findOneAndUpdate({ id: { $eq: userId } }, user, { new: true });
     if (!updatedUser) {
         throw new HttpError(ERROR_MESSAGES.RESOURCE_NOT_FOUND, 404);
     }
