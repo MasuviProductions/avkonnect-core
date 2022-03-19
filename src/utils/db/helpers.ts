@@ -30,7 +30,6 @@ export const getNewUserModelFromJWTUserPayload = async (
         backgroundImageUrl: '',
         connectionCount: 0,
         currentPosition: '',
-        dateOfBirth: new Date(0),
         displayPictureUrl: '',
         email: jwtUserPayload.email,
         followerCount: 0,

@@ -28,7 +28,7 @@ export interface IUser {
     backgroundImageUrl: string;
     connectionCount: number;
     currentPosition: string;
-    dateOfBirth: Date;
+    dateOfBirth?: Date;
     displayPictureUrl: string;
     email: string;
     followerCount: number;
