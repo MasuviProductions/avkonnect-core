@@ -14,6 +14,10 @@ import { IExperience } from '../models/experience';
 import { ICertification } from '../models/certifications';
 import { validationResult } from 'express-validator';
 import { performDynamoDBTransactions, performMongoDBTransactions } from '../utils/db/helpers';
+import { INotificationActivity } from '../interfaces/api';
+import SQS_QUEUE from '../utils/queue';
+import { SQS } from 'aws-sdk';
+import ENV from '../constants/env';
 
 const getUserProfile = async (
     req: Request,
@@ -179,6 +183,17 @@ const postCreateConnectionForUser = async (
             DBTransactions.createUserConnectionTransaction(connecteeId, userId, false),
         ]);
         const user = await DBQueries.getUserById(userId);
+        const connecteeIntiatedConnection = await DBQueries.getConnection(connecteeId, userId);
+        const notificationActivity: INotificationActivity = {
+            resourceRefId: connecteeIntiatedConnection.id,
+            activityType: 'connectionRequest',
+        };
+        const notificationQueueParams: SQS.SendMessageRequest = {
+            MessageBody: JSON.stringify(notificationActivity),
+            QueueUrl: ENV.AWS.NOTIFICATIONS_SQS_URL,
+        };
+        await SQS_QUEUE.sendMessage(notificationQueueParams).promise();
+
         const response: HttpResponse = {
             success: true,
             data: user,
@@ -242,6 +257,16 @@ const patchConfirmConnectionForUser = async (
         ...(!connecteeFollowing ? [DBQueries.updateUserFollowCountQuery(userId, 'followerCount', 1)] : []),
         ...(!connecteeFollowing ? [DBQueries.updateUserFollowCountQuery(connecteeId, 'followeeCount', 1)] : []),
     ]);
+
+    const notificationActivity: INotificationActivity = {
+        resourceRefId: connecteeIntiatedConnection.id,
+        activityType: 'connectionConfirmation',
+    };
+    const notificationQueueParams: SQS.SendMessageRequest = {
+        MessageBody: JSON.stringify(notificationActivity),
+        QueueUrl: ENV.AWS.NOTIFICATIONS_SQS_URL,
+    };
+    await SQS_QUEUE.sendMessage(notificationQueueParams).promise();
 
     const user = await DBQueries.getUserById(userId);
     const response: HttpResponse = {
