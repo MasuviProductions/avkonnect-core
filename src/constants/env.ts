@@ -14,6 +14,7 @@ const ENV = {
             CLIENT_DOMAIN: process.env.COGNITO_CLIENT_DOMAIN,
             ISSUER_URL: process.env.COGNITO_ISSUER_URL,
         },
+        NOTIFICATIONS_SQS_URL: process.env.AWS_NOTIFICATIONS_SQS_URL || '',
     },
     MONGODB_URL: process.env.MONGODB_URL as string,
 };
