@@ -10,10 +10,7 @@ const getAuthUser = async (
     _next: NextFunction
 ) => {
     const authUser = req.authUser;
-    const userIds = new Set<string>();
-    userIds.add(authUser?.id as string);
-    const [user] = await DBQueries.getUserInfoForIds(userIds);
-
+    const user = await DBQueries.getUserById(authUser?.id as string);
     const response: HttpResponse = {
         success: true,
         data: user,

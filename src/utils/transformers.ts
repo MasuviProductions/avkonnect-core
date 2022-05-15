@@ -3,6 +3,7 @@ import { IUserAvatar } from '../interfaces/api';
 import { ISkills } from '../models/skills';
 import DBQueries from './db/queries';
 import { IProjects } from '../models/projects';
+import { IConnection } from '../models/connection';
 
 export const getExpandedUserSkillSetEndorsers = async (userSkills: ISkills): Promise<ISkills> => {
     const endorsersList = new Set<string>();
@@ -23,6 +24,27 @@ export const getExpandedUserSkillSetEndorsers = async (userSkills: ISkills): Pro
         );
     }
     return userSkills;
+};
+
+export const getExpandedUserConnections = async (userConnections: IConnection[]): Promise<IConnection[]> => {
+    const connecteeIds = new Set<string>();
+    userConnections.forEach((connection) => {
+        connecteeIds.add(connection.connecteeId);
+    });
+    const userList = await DBQueries.getUserInfoForIds(connecteeIds);
+    const connecteeInfoList = getUserInfoInKeyValuePairs(userList);
+
+    console.log(connecteeInfoList);
+    userConnections.forEach((connection) => {
+        connection.connecteeInfo = {
+            name: connecteeInfoList[connection.connecteeId].name,
+            headline: connecteeInfoList[connection.connecteeId].headline,
+            displayPictureUrl: connecteeInfoList[connection.connecteeId].displayPictureUrl,
+            id: connecteeInfoList[connection.connecteeId].id,
+            backgroundImageUrl: connecteeInfoList[connection.connecteeId].backgroundImageUrl,
+        };
+    });
+    return userConnections;
 };
 
 export const getExpandedProjectCollaborators = async (userProjcts: IProjects): Promise<IProjects> => {
@@ -55,6 +77,7 @@ export const getUserInfoInKeyValuePairs = (users: Array<Partial<IUser>>): Record
             headline: user.headline || '',
             displayPictureUrl: user.displayPictureUrl || '',
             email: user.email as string,
+            backgroundImageUrl: user.backgroundImageUrl || '',
         };
     });
     return userObj;
