@@ -91,7 +91,11 @@ export const fetchDynamoDBPaginatedDocuments = async <T extends { id: string }>(
         if (startSearchFromId) {
             query.startAt(startSearchFromId);
         }
-        const searchedDocuments = await query.limit(DYNAMODB_USER_SEARCH_SCAN_LIMIT).attributes(attributes).exec();
+        query.limit(DYNAMODB_USER_SEARCH_SCAN_LIMIT);
+        if (attributes.length > 0) {
+            query.attributes(attributes);
+        }
+        const searchedDocuments = await query.exec();
         startSearchFromId = searchedDocuments.lastKey;
         (searchedDocuments as Array<Partial<T>>).forEach((searchedDocument) => {
             documents.push(searchedDocument);

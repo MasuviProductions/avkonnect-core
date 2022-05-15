@@ -1,23 +1,28 @@
 import { NextFunction, Request, Response } from 'express';
+import { validationResult } from 'express-validator';
+import { SQS } from 'aws-sdk';
 import { ERROR_CODES, ERROR_MESSAGES } from '../constants/errors';
+import ENV from '../constants/env';
 import asyncHandler from '../middlewares/asyncHandler';
-import DBQueries from '../utils/db/queries';
-import { HttpError } from '../utils/error';
 import { HttpResponse } from '../interfaces/generic';
+import { IConnectionType, INotificationActivity } from '../interfaces/api';
 import { IEditableUser } from '../models/user';
-import { generateUploadURL } from '../utils/storage/utils';
-import DBTransactions from '../utils/db/transactions';
 import { ISkillSet } from '../models/skills';
-import { getExpandedProjectCollaborators, getExpandedUserSkillSetEndorsers } from '../utils/transformers';
 import { IProject } from '../models/projects';
 import { IExperience } from '../models/experience';
 import { ICertification } from '../models/certifications';
-import { validationResult } from 'express-validator';
+import { IConnection } from '../models/connection';
+import DBQueries from '../utils/db/queries';
+import { HttpError } from '../utils/error';
+import { generateUploadURL } from '../utils/storage/utils';
 import { performDynamoDBTransactions, performMongoDBTransactions } from '../utils/db/helpers';
-import { INotificationActivity } from '../interfaces/api';
 import SQS_QUEUE from '../utils/queue';
-import { SQS } from 'aws-sdk';
-import ENV from '../constants/env';
+import DBTransactions from '../utils/db/transactions';
+import {
+    getExpandedProjectCollaborators,
+    getExpandedUserConnections,
+    getExpandedUserSkillSetEndorsers,
+} from '../utils/transformers';
 
 const getUserProfile = async (
     req: Request,
@@ -140,7 +145,6 @@ const deleteFollowingForUser = async (
         throw new HttpError(ERROR_MESSAGES.USER_NOT_FOLLOWING, 400, ERROR_CODES.REDUNDANT_ERROR);
     } else {
         await performDynamoDBTransactions([DBTransactions.deleteFollowTransaction(follow.id)]);
-
         await performMongoDBTransactions([
             DBQueries.updateUserFollowCountQuery(userId, 'followeeCount', -1),
             DBQueries.updateUserFollowCountQuery(followeeId, 'followerCount', -1),
@@ -153,6 +157,55 @@ const deleteFollowingForUser = async (
         };
         return res.status(200).json(response);
     }
+};
+
+const getConnectionsForUser = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userId = req.params.user_id;
+    const connectionType = (req.query.connectionType as IConnectionType) || 'all';
+    const limit = Number(req.query.limit as string);
+    const startFromId = req.query.dDBAssistStartFromId as string;
+    const { documents: userConnections, dDBPagination: pagination } = await DBQueries.getConnections(
+        userId,
+        connectionType,
+        limit,
+        startFromId
+    );
+
+    const data = await getExpandedUserConnections(userConnections as IConnection[]);
+    const response: HttpResponse = {
+        success: true,
+        data: data,
+        dDBPagination: pagination,
+    };
+    return res.status(200).send(response);
+};
+
+const getConnectionForUser = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userId = req.params.user_id;
+    const connecteeId = req.params.connectee_id;
+
+    const userConnection = await DBQueries.getConnection(userId, connecteeId);
+
+    if (!userConnection) {
+        throw new HttpError(ERROR_MESSAGES.RESOURCE_NOT_FOUND, 404);
+    }
+
+    const response: HttpResponse = {
+        success: true,
+        data: userConnection,
+    };
+
+    return res.status(200).send(response);
 };
 
 const postCreateConnectionForUser = async (
@@ -182,7 +235,7 @@ const postCreateConnectionForUser = async (
             DBTransactions.createUserConnectionTransaction(userId, connecteeId, true),
             DBTransactions.createUserConnectionTransaction(connecteeId, userId, false),
         ]);
-        const user = await DBQueries.getUserById(userId);
+        const userUpdatedConnection = await DBQueries.getConnection(userId, connecteeId);
         const connecteeIntiatedConnection = await DBQueries.getConnection(connecteeId, userId);
         const notificationActivity: INotificationActivity = {
             resourceRefId: connecteeIntiatedConnection.id,
@@ -196,7 +249,7 @@ const postCreateConnectionForUser = async (
 
         const response: HttpResponse = {
             success: true,
-            data: user,
+            data: userUpdatedConnection,
         };
         return res.status(200).json(response);
     }
@@ -268,10 +321,10 @@ const patchConfirmConnectionForUser = async (
     };
     await SQS_QUEUE.sendMessage(notificationQueueParams).promise();
 
-    const user = await DBQueries.getUserById(userId);
+    const userUpdatedConnection = await DBQueries.getConnection(userId, connecteeId);
     const response: HttpResponse = {
         success: true,
-        data: user,
+        data: userUpdatedConnection,
     };
     return res.status(200).json(response);
 };
@@ -326,10 +379,9 @@ const deleteConnectionForUser = async (
         ...(connecteeFollowing ? [DBQueries.updateUserFollowCountQuery(connecteeId, 'followeeCount', -1)] : []),
     ]);
 
-    const user = await DBQueries.getUserById(userId);
     const response: HttpResponse = {
         success: true,
-        data: user,
+        data: undefined,
     };
     return res.status(200).json(response);
 };
@@ -514,6 +566,8 @@ const getUserSearch = async (
 const USER_CONTROLLER = {
     getUserProfile: asyncHandler(getUserProfile),
     patchUserProfile: asyncHandler(patchUserProfile),
+    getConnectionsForUser: asyncHandler(getConnectionsForUser),
+    getConnectionForUser: asyncHandler(getConnectionForUser),
     postCreateConnectionForUser: asyncHandler(postCreateConnectionForUser),
     patchConfirmConnectionForUser: asyncHandler(patchConfirmConnectionForUser),
     deleteConnectionForUser: asyncHandler(deleteConnectionForUser),
