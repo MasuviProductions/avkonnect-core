@@ -7,7 +7,7 @@ const loggerHandler = asyncHandler(async (req: Request, res: Response, next: Nex
     const traceID = uuid();
     const originalSendFunc = res.send.bind(res);
     res.send = (body: unknown) => {
-        LOGGER.info(`TraceId: ${traceID}, ##### REQUEST BOUNDRY BEGIN #####`);
+        LOGGER.info(`TraceId: ${traceID}`);
         LOGGER.info(
             `TraceId: ${traceID}, API Request: ${JSON.stringify({
                 url: req.url,
@@ -23,7 +23,7 @@ const loggerHandler = asyncHandler(async (req: Request, res: Response, next: Nex
                 responsePayload: body,
             })}`
         );
-        LOGGER.info(`TraceId: ${traceID}, ##### REQUEST BOUNDRY END #####`);
+        LOGGER.info(`TraceId: ${traceID}`);
 
         return originalSendFunc(body);
     };

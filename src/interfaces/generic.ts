@@ -19,9 +19,9 @@ export interface HttpDynamoDBResponsePagination {
     count: number;
 }
 
-export interface HttpResponse {
+export interface HttpResponse<T = unknown> {
     success: boolean;
-    data?: unknown;
+    data?: T;
     error?: HttpResponseError;
     pagination?: HttpResponsePagination;
     dDBPagination?: HttpDynamoDBResponsePagination;

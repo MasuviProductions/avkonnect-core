@@ -14,7 +14,7 @@ const userCertificationsRouter = express.Router({ mergeParams: true });
 const userFeedbackRouter = express.Router({ mergeParams: true });
 
 USER_ROUTER.use('/:user_id/followee', userFollowingRouter);
-USER_ROUTER.use('/:user_id/connectee', userConnectionsRouter);
+USER_ROUTER.use('/:user_id/connections', userConnectionsRouter);
 USER_ROUTER.use('/:user_id/skills', userSkillsRouter);
 USER_ROUTER.use('/:user_id/projects', userProjectsRouter);
 USER_ROUTER.use('/:user_id/signedURL', userSignedURLRouter);
@@ -28,11 +28,15 @@ userFollowingRouter
     .route('/:followee_id')
     .post(USER_CONTROLLER.postFollowingForUser)
     .delete(USER_CONTROLLER.deleteFollowingForUser);
+
+userConnectionsRouter.route('/').get(USER_CONTROLLER.getConnectionsForUser);
 userConnectionsRouter
     .route('/:connectee_id')
+    .get(USER_CONTROLLER.getConnectionForUser)
     .post(USER_CONTROLLER.postCreateConnectionForUser)
     .patch(USER_CONTROLLER.patchConfirmConnectionForUser)
     .delete(USER_CONTROLLER.deleteConnectionForUser);
+
 userSkillsRouter.route('/').get(USER_CONTROLLER.getUserSkills).put([body().isArray()], USER_CONTROLLER.putUserSkills);
 
 userCertificationsRouter

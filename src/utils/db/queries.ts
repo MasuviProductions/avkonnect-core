@@ -3,15 +3,16 @@ import { v4 } from 'uuid';
 import Skills, { ISkills, ISkillSet } from '../../models/skills';
 import Connection, { IConnection } from '../../models/connection';
 import Follow, { IFollow } from '../../models/follow';
-import { fetchMongoDBPaginatedDocuments, IFollowResourceValues } from './helpers';
+import { fetchDynamoDBPaginatedDocuments, fetchMongoDBPaginatedDocuments, IFollowResourceValues } from './helpers';
 import Projects, { IProject, IProjects } from '../../models/projects';
 import Experiences, { IExperience, IExperiences } from '../../models/experience';
 import Certifications, { ICertifications, ICertification } from '../../models/certifications';
 import Feedback, { IFeedback } from '../../models/feedbacks';
 import User, { IUser, IEditableUser } from '../../models/user';
-import { HttpResponsePagination } from '../../interfaces/generic';
+import { HttpDynamoDBResponsePagination, HttpResponsePagination } from '../../interfaces/generic';
 import { HttpError } from '../error';
-import { ERROR_MESSAGES } from '../../constants/errors';
+import { ERROR_CODES, ERROR_MESSAGES } from '../../constants/errors';
+import { IConnectionType } from '../../interfaces/api';
 
 const getAuthUserByEmail = async (email: string): Promise<IUser | undefined> => {
     const user: IUser | null = await User.findOne({
@@ -34,6 +35,9 @@ const getUserById = async (id: string): Promise<IUser> => {
 };
 
 const getUserInfoForIds = async (idList: Set<string>): Promise<Array<Partial<IUser>>> => {
+    if (idList.size <= 0) {
+        return [];
+    }
     const users: Array<Partial<IUser>> = await User.find({
         id: {
             $in: Array.from(idList),
@@ -43,6 +47,7 @@ const getUserInfoForIds = async (idList: Set<string>): Promise<Array<Partial<IUs
         name: 1,
         headline: 1,
         displayPictureUrl: 1,
+        backgroundImageUrl: 1,
         email: 1,
         location: 1,
         gender: 1,
@@ -130,6 +135,49 @@ const getConnection = async (connectorId: string, connecteeId: string): Promise<
         new dynamoose.Condition().where('connectorId').eq(connectorId).and().where('connecteeId').eq(connecteeId)
     ).exec();
     return connections[0];
+};
+
+const getConnections = async (
+    connectorId: string,
+    connectionType: IConnectionType,
+    limit: number,
+    dDBAssistStartFromId: string
+): Promise<{ documents: Partial<IConnection>[]; dDBPagination: HttpDynamoDBResponsePagination }> => {
+    const queryCondition = new dynamoose.Condition().where('connectorId').eq(connectorId);
+
+    switch (connectionType) {
+        case 'connected': {
+            queryCondition.and().where('isConnected').eq(true);
+            break;
+        }
+        case 'pending': {
+            queryCondition
+                .and()
+                .where('isConnected')
+                .eq(false)
+                .and()
+                .where('connectionInitiatedBy')
+                .not()
+                .eq(connectorId);
+            break;
+        }
+        case 'sent': {
+            queryCondition.and().where('isConnected').eq(false).and().where('connectionInitiatedBy').eq(connectorId);
+            break;
+        }
+        case 'all':
+            break;
+        default:
+            throw new HttpError(ERROR_MESSAGES.USER_CONNECTIONS_QUERY_PARAM, 400, ERROR_CODES.INVALID_ERROR);
+    }
+    const initialQuery = Connection.scan(queryCondition);
+    const connections = await fetchDynamoDBPaginatedDocuments<IConnection>(
+        initialQuery,
+        [],
+        limit,
+        dDBAssistStartFromId
+    );
+    return connections;
 };
 
 const createCertifications = async (): Promise<ICertifications> => {
@@ -230,6 +278,7 @@ const DBQueries = {
     getCertifications,
     updateCertifications,
     createFeedback,
+    getConnections,
     updateUserConnectionCountQuery,
     updateUserFollowCountQuery,
 };
