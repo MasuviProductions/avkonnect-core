@@ -15,7 +15,7 @@ import { IConnection } from '../models/connection';
 import DBQueries from '../utils/db/queries';
 import { HttpError } from '../utils/error';
 import { generateUploadURL } from '../utils/storage/utils';
-import { performDynamoDBTransactions, performMongoDBTransactions } from '../utils/db/helpers';
+import { performDynamoDBTransactions } from '../utils/db/helpers';
 import SQS_QUEUE from '../utils/queue';
 import DBTransactions from '../utils/db/transactions';
 import {
@@ -111,10 +111,9 @@ const postFollowingForUser = async (
     } else {
         await performDynamoDBTransactions([DBTransactions.createFollowTransaction(userId, followeeId)]);
 
-        await performMongoDBTransactions([
-            DBQueries.updateUserFollowCountQuery(userId, 'followeeCount', 1),
-            DBQueries.updateUserFollowCountQuery(followeeId, 'followerCount', 1),
-        ]);
+        await DBQueries.updateUserFollowCountQuery(userId, 'followeeCount', 1);
+        await DBQueries.updateUserFollowCountQuery(followeeId, 'followerCount', 1);
+
         const user = await DBQueries.getUserById(userId);
         const response: HttpResponse = {
             success: true,
@@ -145,10 +144,9 @@ const deleteFollowingForUser = async (
         throw new HttpError(ERROR_MESSAGES.USER_NOT_FOLLOWING, 400, ERROR_CODES.REDUNDANT_ERROR);
     } else {
         await performDynamoDBTransactions([DBTransactions.deleteFollowTransaction(follow.id)]);
-        await performMongoDBTransactions([
-            DBQueries.updateUserFollowCountQuery(userId, 'followeeCount', -1),
-            DBQueries.updateUserFollowCountQuery(followeeId, 'followerCount', -1),
-        ]);
+
+        await DBQueries.updateUserFollowCountQuery(userId, 'followeeCount', -1);
+        await DBQueries.updateUserFollowCountQuery(followeeId, 'followerCount', -1);
 
         const user = await DBQueries.getUserById(userId);
         const response: HttpResponse = {
@@ -291,25 +289,24 @@ const patchConfirmConnectionForUser = async (
         DBTransactions.confirmConnectionTransaction(userInitiatedConnection.id, connectedAt),
         DBTransactions.confirmConnectionTransaction(connecteeIntiatedConnection.id, connectedAt),
     ]);
-    await performMongoDBTransactions([
-        DBQueries.updateUserConnectionCountQuery(userId, 1),
-        DBQueries.updateUserConnectionCountQuery(connecteeId, 1),
-    ]);
+
+    await DBQueries.updateUserConnectionCountQuery(userId, 1);
+    await DBQueries.updateUserConnectionCountQuery(connecteeId, 1);
 
     await performDynamoDBTransactions([
         ...(!userFollowing ? [DBTransactions.createFollowTransaction(userId, connecteeId)] : []),
         ...(!connecteeFollowing ? [DBTransactions.createFollowTransaction(connecteeId, userId)] : []),
     ]);
 
-    await performMongoDBTransactions([
-        ...(!userFollowing ? [DBQueries.updateUserFollowCountQuery(userId, 'followeeCount', 1)] : []),
-        ...(!userFollowing ? [DBQueries.updateUserFollowCountQuery(connecteeId, 'followerCount', 1)] : []),
-    ]);
+    if (!userFollowing) {
+        await DBQueries.updateUserFollowCountQuery(userId, 'followeeCount', 1);
+        await DBQueries.updateUserFollowCountQuery(connecteeId, 'followerCount', 1);
+    }
 
-    await performMongoDBTransactions([
-        ...(!connecteeFollowing ? [DBQueries.updateUserFollowCountQuery(userId, 'followerCount', 1)] : []),
-        ...(!connecteeFollowing ? [DBQueries.updateUserFollowCountQuery(connecteeId, 'followeeCount', 1)] : []),
-    ]);
+    if (!connecteeFollowing) {
+        await DBQueries.updateUserFollowCountQuery(userId, 'followerCount', 1);
+        await DBQueries.updateUserFollowCountQuery(connecteeId, 'followeeCount', 1);
+    }
 
     const notificationActivity: INotificationActivity = {
         resourceRefId: connecteeIntiatedConnection.id,
@@ -358,10 +355,8 @@ const deleteConnectionForUser = async (
     ]);
 
     if (userInitiatedConnection.isConnected) {
-        await performMongoDBTransactions([
-            DBQueries.updateUserConnectionCountQuery(userId, -1),
-            DBQueries.updateUserConnectionCountQuery(connecteeId, -1),
-        ]);
+        await DBQueries.updateUserConnectionCountQuery(userId, -1);
+        await DBQueries.updateUserConnectionCountQuery(connecteeId, -1);
     }
 
     await performDynamoDBTransactions([
@@ -369,15 +364,15 @@ const deleteConnectionForUser = async (
         ...(connecteeFollowing ? [DBTransactions.deleteFollowTransaction(connecteeFollowing.id)] : []),
     ]);
 
-    await performMongoDBTransactions([
-        ...(userFollowing ? [DBQueries.updateUserFollowCountQuery(userId, 'followeeCount', -1)] : []),
-        ...(connecteeFollowing ? [DBQueries.updateUserFollowCountQuery(connecteeId, 'followerCount', -1)] : []),
-    ]);
+    if (userFollowing) {
+        await DBQueries.updateUserFollowCountQuery(userId, 'followeeCount', -1);
+        await DBQueries.updateUserFollowCountQuery(userId, 'followerCount', -1);
+    }
 
-    await performMongoDBTransactions([
-        ...(userFollowing ? [DBQueries.updateUserFollowCountQuery(userId, 'followerCount', -1)] : []),
-        ...(connecteeFollowing ? [DBQueries.updateUserFollowCountQuery(connecteeId, 'followeeCount', -1)] : []),
-    ]);
+    if (connecteeFollowing) {
+        await DBQueries.updateUserFollowCountQuery(connecteeId, 'followerCount', -1);
+        await DBQueries.updateUserFollowCountQuery(connecteeId, 'followeeCount', -1);
+    }
 
     const response: HttpResponse = {
         success: true,
