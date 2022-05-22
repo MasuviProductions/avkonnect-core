@@ -236,7 +236,7 @@ const postCreateConnectionForUser = async (
         const userUpdatedConnection = await DBQueries.getConnection(userId, connecteeId);
         const connecteeIntiatedConnection = await DBQueries.getConnection(connecteeId, userId);
         const notificationActivity: INotificationActivity = {
-            resourceRefId: connecteeIntiatedConnection.id,
+            resourceId: connecteeIntiatedConnection.id,
             activityType: 'connectionRequest',
         };
         const notificationQueueParams: SQS.SendMessageRequest = {
@@ -309,7 +309,7 @@ const patchConfirmConnectionForUser = async (
     }
 
     const notificationActivity: INotificationActivity = {
-        resourceRefId: connecteeIntiatedConnection.id,
+        resourceId: connecteeIntiatedConnection.id,
         activityType: 'connectionConfirmation',
     };
     const notificationQueueParams: SQS.SendMessageRequest = {
