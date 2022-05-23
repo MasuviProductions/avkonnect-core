@@ -56,6 +56,8 @@ userExperiencesRouter
 
 userSignedURLRouter.route('/').get(USER_CONTROLLER.getUserUploadSignedURL);
 
+USER_ROUTER.route('/getUsersInfo').post([body().isArray()], USER_CONTROLLER.getUsersInfo);
+
 USER_ROUTER.route('/:user_id')
     .get(USER_CONTROLLER.getUserProfile)
     .patch(

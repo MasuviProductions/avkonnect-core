@@ -130,6 +130,14 @@ const getFollow = async (followerId: string, followeeId: string): Promise<IFollo
     return follows[0];
 };
 
+const getConnectionById = async (connectionId: string): Promise<IConnection> => {
+    const connection = await Connection.get(connectionId);
+    if (!connection) {
+        throw new HttpError(ERROR_MESSAGES.RESOURCE_NOT_FOUND, 404, ERROR_CODES.NOT_FOUND_ERROR);
+    }
+    return connection;
+};
+
 const getConnection = async (connectorId: string, connecteeId: string): Promise<IConnection> => {
     const connections = await Connection.scan(
         new dynamoose.Condition().where('connectorId').eq(connectorId).and().where('connecteeId').eq(connecteeId)
@@ -256,6 +264,7 @@ const updateProjects = async (projectsId: string, projects: Array<IProject>): Pr
 };
 
 const DBQueries = {
+    getConnectionById,
     getConnection,
     createUser,
     getFollow,

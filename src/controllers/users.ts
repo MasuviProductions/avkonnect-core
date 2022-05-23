@@ -236,7 +236,7 @@ const postCreateConnectionForUser = async (
         const userUpdatedConnection = await DBQueries.getConnection(userId, connecteeId);
         const connecteeIntiatedConnection = await DBQueries.getConnection(connecteeId, userId);
         const notificationActivity: INotificationActivity = {
-            resourceRefId: connecteeIntiatedConnection.id,
+            resourceId: connecteeIntiatedConnection.id,
             activityType: 'connectionRequest',
         };
         const notificationQueueParams: SQS.SendMessageRequest = {
@@ -309,7 +309,7 @@ const patchConfirmConnectionForUser = async (
     }
 
     const notificationActivity: INotificationActivity = {
-        resourceRefId: connecteeIntiatedConnection.id,
+        resourceId: connecteeIntiatedConnection.id,
         activityType: 'connectionConfirmation',
     };
     const notificationQueueParams: SQS.SendMessageRequest = {
@@ -558,7 +558,26 @@ const getUserSearch = async (
     return res.status(200).json(response);
 };
 
+const getUsersInfo = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userIds = req.body as string[];
+
+    const userList = await DBQueries.getUserInfoForIds(new Set(userIds));
+
+    const response: HttpResponse = {
+        success: true,
+        data: userList,
+    };
+
+    return res.status(200).json(response);
+};
+
 const USER_CONTROLLER = {
+    getUsersInfo: asyncHandler(getUsersInfo),
     getUserProfile: asyncHandler(getUserProfile),
     patchUserProfile: asyncHandler(patchUserProfile),
     getConnectionsForUser: asyncHandler(getConnectionsForUser),
