@@ -558,7 +558,26 @@ const getUserSearch = async (
     return res.status(200).json(response);
 };
 
+const getUsersInfo = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userIds = req.body as string[];
+
+    const userList = await DBQueries.getUserInfoForIds(new Set(userIds));
+
+    const response: HttpResponse = {
+        success: true,
+        data: userList,
+    };
+
+    return res.status(200).json(response);
+};
+
 const USER_CONTROLLER = {
+    getUsersInfo: asyncHandler(getUsersInfo),
     getUserProfile: asyncHandler(getUserProfile),
     patchUserProfile: asyncHandler(patchUserProfile),
     getConnectionsForUser: asyncHandler(getConnectionsForUser),

@@ -8,6 +8,7 @@ import AUTH_ROUTER from './routes/auth';
 import USER_ROUTER from './routes/user';
 import { initDynamoDB, initMongoDB } from './utils/db/client';
 import routeExcludeHandler from './middlewares/routeExcludeHandler';
+import CONNECTION_ROUTER from './routes/connections';
 const APP = express();
 
 initDynamoDB();
@@ -33,6 +34,7 @@ APP.use(
 // API service routes
 APP.use('/api/v1/auth', AUTH_ROUTER);
 APP.use('/api/v1/users', USER_ROUTER);
+APP.use('/api/v1/connections', CONNECTION_ROUTER);
 
 APP.use(errorHandler);
 
