@@ -21,11 +21,13 @@ APP.use(express.json());
 APP.use(loggerHandler);
 APP.use(
     routeExcludeHandler(
-        ['GET'],
+        ['GET', 'POST'],
         [
             '/api/v1/users/:user_id/displayPicture\\?thumbnail=(true|false)',
             '/api/v1/users/:user_id/displayPicture',
             '/api/v1/users/:user_id/backgroundPicture',
+            '/api/v1/users/getUsersInfo',
+            '/api/v1/connections/:connection_id',
         ],
         authHandler
     )
