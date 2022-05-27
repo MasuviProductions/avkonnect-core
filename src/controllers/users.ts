@@ -23,6 +23,7 @@ import {
     getExpandedUserConnections,
     getExpandedUserSkillSetEndorsers,
 } from '../utils/transformers';
+import { ObjectType } from 'dynamoose/dist/General';
 
 const getUserProfile = async (
     req: Request,
@@ -166,12 +167,12 @@ const getConnectionsForUser = async (
     const userId = req.params.user_id;
     const connectionType = (req.query.connectionType as IConnectionType) || 'all';
     const limit = Number(req.query.limit as string);
-    const startFromId = req.query.dDBAssistStartFromId as string;
+    const startFromKey = req.query.nextSearchStartFromKey as string;
     const { documents: userConnections, dDBPagination: pagination } = await DBQueries.getConnections(
         userId,
         connectionType,
         limit,
-        startFromId
+        startFromKey ? (JSON.parse(decodeURI(startFromKey)) as ObjectType) : undefined
     );
 
     const data = await getExpandedUserConnections(userConnections as IConnection[]);

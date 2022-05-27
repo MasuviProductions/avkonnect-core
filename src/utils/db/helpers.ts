@@ -1,4 +1,4 @@
-import { Scan } from 'dynamoose/dist/DocumentRetriever';
+import { Scan, Query as DynamooseQuery } from 'dynamoose/dist/DocumentRetriever';
 import { ObjectType } from 'dynamoose/dist/General';
 import { v4 } from 'uuid';
 import { HttpDynamoDBResponsePagination, HttpResponsePagination } from '../../interfaces/generic';
@@ -76,39 +76,51 @@ export const getFollowQueryAndAttributeFields = (
 const DYNAMODB_USER_SEARCH_SCAN_LIMIT = 15;
 
 export const fetchDynamoDBPaginatedDocuments = async <T extends { id: string }>(
-    initialQuery: Scan<IDynamooseDocument<T>>,
+    initialQuery: Scan<IDynamooseDocument<T>> | DynamooseQuery<IDynamooseDocument<T>>,
     attributes: Array<string>,
     requestLimit: number,
-    dDBAssistStartFromId: string | undefined
+    dDBAssistStartFromKeyFields: Array<keyof T>,
+    dDBAssistStartFromKey?: ObjectType
 ): Promise<{
     documents: Partial<T>[];
     dDBPagination: HttpDynamoDBResponsePagination;
 }> => {
-    let startSearchFromId: ObjectType | undefined = dDBAssistStartFromId ? { id: dDBAssistStartFromId } : undefined;
+    let startSearchFrom = dDBAssistStartFromKey;
     let documents: Array<Partial<T>> = [];
     do {
         const query = initialQuery;
-        if (startSearchFromId) {
-            query.startAt(startSearchFromId);
+        if (startSearchFrom) {
+            query.startAt(startSearchFrom);
         }
         query.limit(DYNAMODB_USER_SEARCH_SCAN_LIMIT);
         if (attributes.length > 0) {
             query.attributes(attributes);
         }
         const searchedDocuments = await query.exec();
-        startSearchFromId = searchedDocuments.lastKey;
+
+        startSearchFrom = searchedDocuments.lastKey;
+
         (searchedDocuments as Array<Partial<T>>).forEach((searchedDocument) => {
             documents.push(searchedDocument);
         });
-    } while (documents.length < requestLimit && startSearchFromId);
+    } while (documents.length < requestLimit && startSearchFrom);
 
-    let nextSearchStartFromId: string | undefined = startSearchFromId?.id;
+    const nextSearchStartFromKey: ObjectType = {};
+
+    if (startSearchFrom) {
+        Object.entries(startSearchFrom).forEach(([key, value]) => {
+            nextSearchStartFromKey[key] = value;
+        });
+    }
+
     if (requestLimit < documents.length) {
         documents = [...documents.slice(0, requestLimit)];
-        nextSearchStartFromId = documents?.[documents.length - 1]?.id as string;
+        dDBAssistStartFromKeyFields.forEach((key) => {
+            nextSearchStartFromKey[key as string] = documents?.[documents.length - 1][key];
+        });
     }
     const dDBPagination: HttpDynamoDBResponsePagination = {
-        nextSearchStartFromId,
+        nextSearchStartFromKey: Object.keys(nextSearchStartFromKey).length > 0 ? nextSearchStartFromKey : undefined,
         count: documents.length,
     };
     return { documents, dDBPagination };
