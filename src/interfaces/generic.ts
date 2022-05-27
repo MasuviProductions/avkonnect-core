@@ -1,4 +1,5 @@
 import { Document } from 'dynamoose/dist/Document';
+import { ObjectType } from 'dynamoose/dist/General';
 
 export type IDynamooseDocument<T> = T & Document;
 
@@ -15,7 +16,7 @@ export interface HttpResponsePagination {
 }
 
 export interface HttpDynamoDBResponsePagination {
-    nextSearchStartFromId?: string;
+    nextSearchStartFromKey?: ObjectType;
     count: number;
 }
 

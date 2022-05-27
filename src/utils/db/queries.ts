@@ -13,6 +13,7 @@ import { HttpDynamoDBResponsePagination, HttpResponsePagination } from '../../in
 import { HttpError } from '../error';
 import { ERROR_CODES, ERROR_MESSAGES } from '../../constants/errors';
 import { IConnectionType } from '../../interfaces/api';
+import { ObjectType } from 'dynamoose/dist/General';
 
 const getAuthUserByEmail = async (email: string): Promise<IUser | undefined> => {
     const user: IUser | null = await User.findOne({
@@ -149,7 +150,7 @@ const getConnections = async (
     connectorId: string,
     connectionType: IConnectionType,
     limit: number,
-    dDBAssistStartFromId: string
+    nextSearchStartFromKey?: ObjectType
 ): Promise<{ documents: Partial<IConnection>[]; dDBPagination: HttpDynamoDBResponsePagination }> => {
     const queryCondition = new dynamoose.Condition().where('connectorId').eq(connectorId);
 
@@ -183,7 +184,8 @@ const getConnections = async (
         initialQuery,
         [],
         limit,
-        dDBAssistStartFromId
+        ['id'],
+        nextSearchStartFromKey
     );
     return connections;
 };
