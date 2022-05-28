@@ -44,6 +44,7 @@ export interface IUser {
     searchFields: IUserSearchFields;
     skillsRefId: string;
     certificationsRefId: string;
+    unseenNotificationsCount?: number;
 }
 const UserSchema = new Schema<IUser>(
     {
@@ -73,6 +74,8 @@ const UserSchema = new Schema<IUser>(
         timestamps: true,
     }
 );
+UserSchema.add({ unseenNotificationsCount: { type: Number } });
+
 export default mongoose.model<IUser>(TABLE.USERS, UserSchema);
 
 export const READABLE_USER_PROPERTIES = [
@@ -85,4 +88,19 @@ export const READABLE_USER_PROPERTIES = [
     'updatedAt',
 ] as const;
 
-export type IEditableUser = Partial<Omit<IUser, typeof READABLE_USER_PROPERTIES[number]>>;
+export type IEditableUser = Pick<
+    IUser,
+    | 'aboutUser'
+    | 'backgroundImageUrl'
+    | 'currentPosition'
+    | 'dateOfBirth'
+    | 'displayPictureUrl'
+    | 'email'
+    | 'gender'
+    | 'headline'
+    | 'location'
+    | 'name'
+    | 'phone'
+    | 'preferences'
+    | 'unseenNotificationsCount'
+>;

@@ -10,10 +10,6 @@ const ENV = {
         SECRET: process.env.AWS_SECRET,
         REGION: process.env.AWS_REGION,
         S3: { BUCKET: process.env.S3_BUCKET },
-        COGNITO: {
-            CLIENT_DOMAIN: process.env.COGNITO_CLIENT_DOMAIN,
-            ISSUER_URL: process.env.COGNITO_ISSUER_URL,
-        },
         NOTIFICATIONS_SQS_URL: process.env.AWS_NOTIFICATIONS_SQS_URL || '',
     },
     MONGODB_URL: process.env.MONGODB_URL as string,

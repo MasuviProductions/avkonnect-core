@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 import { HttpDynamoDBResponsePagination, HttpResponsePagination } from '../../interfaces/generic';
 import { IDynamooseDocument } from '../../interfaces/generic';
 import { IMinifiedUser } from '../../interfaces/api';
-import { ICognitoUserInfoApiResponse } from '../../interfaces/jwt';
+import { ICognitoUserInfoApiResponse } from '@masuviproductions/avkonnect-auth/lib/interfaces/jwt';
 import { IUser } from '../../models/user';
 import DBQueries from './queries';
 import { IProjects } from '../../models/projects';
@@ -45,6 +45,7 @@ export const getNewUserModelFromJWTUserPayload = async (
         skillsRefId: newSkills.id,
         experiencesRefId: newExperience.id,
         certificationsRefId: newCertification.id,
+        unseenNotificationsCount: 0,
     };
     return newUser;
 };
