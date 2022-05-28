@@ -12,6 +12,7 @@ jobs:
         env:
             PROD_VARIABLES: ${{ secrets.PROD_VARIABLES }}
             DEV_VARIABLES: ${{ secrets.DEV_VARIABLES }}
+            NPMRC: ${{ secrets.NPMRC  }}
 
         steps:
             - uses: actions/checkout@v2
@@ -20,10 +21,10 @@ jobs:
               run: |
                   touch .env
                   [[ ${GITHUB_REF#refs/heads/} = main ]] && echo "${PROD_VARIABLES}" >> .env || echo "${DEV_VARIABLES}" >> .env
-            # Runs a single command using the runners shell
+
             - name: Install node packages
               run: |
-                  touch .npmrc && echo "@masuviproductions:registry=https://npm.pkg.github.com/\n//npm.pkg.github.com/:_authToken=${AUTH_NPMRC_TOKEN}" >> .npmrc
+                  touch .npmrc && echo "${NPMRC}" >> .npmrc
                   cat .npmrc
                   npm install
 
