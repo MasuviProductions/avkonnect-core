@@ -23,7 +23,7 @@ jobs:
             # Runs a single command using the runners shell
             - name: Install node packages
               run: |
-                  touch .npmrc && echo @masuviproductions:registry=https://npm.pkg.github.com/\n//npm.pkg.github.com/:_authToken=${AUTH_NPMRC_TOKEN} >> .npmrc
+                  touch .npmrc && echo "@masuviproductions:registry=https://npm.pkg.github.com/\n//npm.pkg.github.com/:_authToken=${AUTH_NPMRC_TOKEN}" >> .npmrc
                   cat .npmrc
                   npm install
 
