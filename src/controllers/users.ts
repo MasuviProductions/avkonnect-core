@@ -33,8 +33,11 @@ const getUserProfile = async (
 ) => {
     const userId = req.params.user_id;
     const authUser = req.authUser;
-    if (!authUser) {
-        throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+    const isUserToken = req.isUserToken;
+    if (isUserToken) {
+        if (!authUser) {
+            throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+        }
     }
     const user = await DBQueries.getUserById(userId as string);
     const response: HttpResponse = {
@@ -57,8 +60,11 @@ const patchUserProfile = async (
     const userId = req.params.user_id;
     const userUpdateDetails: IEditableUser = req.body;
     const authUser = req.authUser;
-    if (!authUser || authUser.id !== userId) {
-        throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+    const isUserToken = req.isUserToken;
+    if (isUserToken) {
+        if (!authUser || authUser.id !== userId) {
+            throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+        }
     }
     const user = await DBQueries.updateUser(userId, userUpdateDetails);
     const response: HttpResponse = {

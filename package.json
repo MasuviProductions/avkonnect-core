@@ -30,7 +30,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@masuviproductions/avkonnect-auth": "2.0.0",
+        "@masuviproductions/avkonnect-auth": "2.3.1",
         "aws-sdk": "^2.1043.0",
         "axios": "^0.24.0",
         "cors": "^2.8.5",
