@@ -24,6 +24,7 @@ import {
     getExpandedUserSkillSetEndorsers,
 } from '../utils/transformers';
 import { ObjectType } from 'dynamoose/dist/General';
+import { IEditableSettings } from '../models/settings';
 
 const getUserProfile = async (
     req: Request,
@@ -583,7 +584,60 @@ const getUsersInfo = async (
     return res.status(200).json(response);
 };
 
+const getUserSettings = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userId = req.params.user_id;
+    const authUser = req.authUser;
+    const isUserToken = req.isUserToken;
+    if (isUserToken) {
+        if (!authUser || authUser.id !== userId) {
+            throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+        }
+    }
+    const userSettingsRefId = await DBQueries.getUserById(userId);
+    const userSettings = await DBQueries.getSettings(userSettingsRefId.settingsRefId);
+    const response: HttpResponse = {
+        success: true,
+        data: userSettings,
+    };
+    return res.status(200).json(response);
+};
+
+const settingsProperties = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const err = validationResult(req);
+    if (!err.isEmpty()) {
+        throw new HttpError(err.array()[0].param, 400, ERROR_CODES.INVALID_ERROR);
+    }
+    const userId = req.params.user_id;
+    const settingsUpdateDetails: IEditableSettings = req.body;
+    const authUser = req.authUser;
+    const isUserToken = req.isUserToken;
+    if (isUserToken) {
+        if (!authUser || authUser.id !== userId) {
+            throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+        }
+    }
+    const settings = await DBQueries.getUserById(userId);
+    const user = await DBQueries.changeSettings(settings.settingsRefId, settingsUpdateDetails);
+    console.log('change of settings info: ', user);
+    const response: HttpResponse = {
+        success: true,
+        data: user,
+    };
+    return res.status(200).json(response);
+};
+
 const USER_CONTROLLER = {
+    getUserSettings: asyncHandler(getUserSettings),
     getUsersInfo: asyncHandler(getUsersInfo),
     getUserProfile: asyncHandler(getUserProfile),
     patchUserProfile: asyncHandler(patchUserProfile),
@@ -605,6 +659,7 @@ const USER_CONTROLLER = {
     getUserCertifications: asyncHandler(getUserCertifications),
     putUserCertifications: asyncHandler(putUserCertifications),
     postUserFeedback: asyncHandler(postUserFeedback),
+    settingsProperties: asyncHandler(settingsProperties),
 };
 
 export default USER_CONTROLLER;

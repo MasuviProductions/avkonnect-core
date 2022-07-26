@@ -5,6 +5,7 @@ import Connection, { IConnection } from '../../models/connection';
 import Follow, { IFollow } from '../../models/follow';
 import { fetchDynamoDBPaginatedDocuments, fetchMongoDBPaginatedDocuments, IFollowResourceValues } from './helpers';
 import Projects, { IProject, IProjects } from '../../models/projects';
+import Settings, { ISettings, IEditableSettings } from '../../models/settings';
 import Experiences, { IExperience, IExperiences } from '../../models/experience';
 import Certifications, { ICertifications, ICertification } from '../../models/certifications';
 import Feedback, { IFeedback } from '../../models/feedbacks';
@@ -210,6 +211,19 @@ const createSkills = async (): Promise<ISkills> => {
     return skills;
 };
 
+const createSettings = async (gender: boolean, dob: boolean, location: boolean, theme: string): Promise<ISettings> => {
+    const settings: ISettings = {
+        id: v4(),
+        gender,
+        dob,
+        location,
+        theme,
+    };
+    const skillsObj = new Skills(settings);
+    skillsObj.save();
+    return settings;
+};
+
 const createExperiences = async (): Promise<IExperiences> => {
     const experiences: IExperiences = {
         id: v4(),
@@ -265,7 +279,20 @@ const updateProjects = async (projectsId: string, projects: Array<IProject>): Pr
     return await Projects.update({ id: projectsId }, { projects: projects });
 };
 
+const getSettings = async (settingsId: string): Promise<ISettings> => {
+    return await Settings.get({ id: settingsId });
+};
+
+const changeSettings = async (settingsId: string, value: IEditableSettings): Promise<ISettings> => {
+    const changedSettings: ISettings | null = await Settings.update({ id: settingsId }, value);
+    if (!changedSettings) {
+        throw new HttpError(ERROR_MESSAGES.RESOURCE_NOT_FOUND, 404);
+    }
+    return changedSettings;
+};
+
 const DBQueries = {
+    getSettings,
     getConnectionById,
     getConnection,
     createUser,
@@ -292,6 +319,8 @@ const DBQueries = {
     getConnections,
     updateUserConnectionCountQuery,
     updateUserFollowCountQuery,
+    changeSettings,
+    createSettings,
 };
 
 export default DBQueries;

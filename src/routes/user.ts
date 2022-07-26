@@ -12,6 +12,7 @@ const userSignedURLRouter = express.Router({ mergeParams: true });
 const userExperiencesRouter = express.Router({ mergeParams: true });
 const userCertificationsRouter = express.Router({ mergeParams: true });
 const userFeedbackRouter = express.Router({ mergeParams: true });
+const userSettingsProperties = express.Router({ mergeParams: true });
 
 USER_ROUTER.use('/:user_id/followee', userFollowingRouter);
 USER_ROUTER.use('/:user_id/connections', userConnectionsRouter);
@@ -21,6 +22,9 @@ USER_ROUTER.use('/:user_id/signedURL', userSignedURLRouter);
 USER_ROUTER.use('/:user_id/experiences', userExperiencesRouter);
 USER_ROUTER.use('/:user_id/certifications', userCertificationsRouter);
 USER_ROUTER.use('/:user_id/feedback', userFeedbackRouter);
+USER_ROUTER.use('/:user_id/settings', userSettingsProperties);
+
+userSettingsProperties.route('/').patch(USER_CONTROLLER.settingsProperties).get(USER_CONTROLLER.getUserSettings);
 
 userFeedbackRouter.route('/').post(USER_CONTROLLER.postUserFeedback);
 

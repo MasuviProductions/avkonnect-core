@@ -45,6 +45,7 @@ export interface IUser {
     skillsRefId: string;
     certificationsRefId: string;
     unseenNotificationsCount?: number;
+    settingsRefId: string;
 }
 const UserSchema = new Schema<IUser>(
     {
@@ -69,6 +70,7 @@ const UserSchema = new Schema<IUser>(
         searchFields: { type: Object, schema: UserSearchfieldsSchema },
         skillsRefId: { type: String },
         certificationsRefId: { type: String },
+        settingsRefId: { type: String },
     },
     {
         timestamps: true,
