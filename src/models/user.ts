@@ -12,13 +12,7 @@ export interface IUserPreference {
     connections: IUserConnections;
 }
 
-export interface IUserRole {
-    role: 'user' | 'admin';
-}
-
-const UserRoleSchema = new Schema<IUserRole>({
-    role: { type: String },
-});
+export type IUserRole = 'user' | 'admin';
 
 const UserPreferenceSchema = new Schema<IUserPreference>({
     connections: { type: Object, schema: UserPreferenceConnectionsScehma },
@@ -61,7 +55,7 @@ const UserSchema = new Schema<IUser>(
     {
         id: { type: String, hashKey: true },
         aboutUser: { type: String },
-        role: { type: Object, schema: UserRoleSchema },
+        role: { type: String },
         backgroundImageUrl: { type: String },
         connectionCount: { type: Number },
         currentPosition: { type: String },
