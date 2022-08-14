@@ -9,13 +9,21 @@ export type IUserAvatar = Pick<
     'id' | 'name' | 'email' | 'displayPictureUrl' | 'headline' | 'backgroundImageUrl'
 >;
 
-export type IConnectionActivityType = 'connectionRequest' | 'connectionConfirmation';
+export type ISourceType = 'user' | 'company';
 
-export type IActivityType = IConnectionActivityType;
+export type IResourceType = 'post' | 'comment' | 'connection' | 'broadcast';
 
+export type IConnectionActivity = 'connectionRequest' | 'connectionConfirmation';
+export type IPostActivity = 'postReaction' | 'postComment' | 'postCreation';
+export type ICommentActivity = 'commentReaction' | 'commentComment' | 'commentCreation';
+
+export type IResourceActivity = IConnectionActivity | IPostActivity | ICommentActivity;
 export interface INotificationActivity {
     resourceId: string;
-    activityType: IActivityType;
+    resourceType: IResourceType;
+    resourceActivity: IResourceActivity;
+    sourceId: string;
+    sourceType: ISourceType;
 }
 
 export type IConnectionType = 'connected' | 'pending' | 'all' | 'sent';

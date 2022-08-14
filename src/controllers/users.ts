@@ -245,7 +245,10 @@ const postCreateConnectionForUser = async (
         const connecteeIntiatedConnection = await DBQueries.getConnection(connecteeId, userId);
         const notificationActivity: INotificationActivity = {
             resourceId: connecteeIntiatedConnection.id,
-            activityType: 'connectionRequest',
+            resourceType: 'connection',
+            resourceActivity: 'connectionRequest',
+            sourceId: userId,
+            sourceType: 'user',
         };
         const notificationQueueParams: SQS.SendMessageRequest = {
             MessageBody: JSON.stringify(notificationActivity),
@@ -318,7 +321,10 @@ const patchConfirmConnectionForUser = async (
 
     const notificationActivity: INotificationActivity = {
         resourceId: connecteeIntiatedConnection.id,
-        activityType: 'connectionConfirmation',
+        resourceType: 'connection',
+        resourceActivity: 'connectionConfirmation',
+        sourceId: connecteeId,
+        sourceType: 'user',
     };
     const notificationQueueParams: SQS.SendMessageRequest = {
         MessageBody: JSON.stringify(notificationActivity),
