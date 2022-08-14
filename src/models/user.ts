@@ -11,6 +11,15 @@ const UserPreferenceConnectionsScehma = new Schema<IUserConnections>({
 export interface IUserPreference {
     connections: IUserConnections;
 }
+
+export interface IUserRole {
+    role: 'user' | 'admin';
+}
+
+const UserRoleSchema = new Schema<IUserRole>({
+    role: { type: String },
+});
+
 const UserPreferenceSchema = new Schema<IUserPreference>({
     connections: { type: Object, schema: UserPreferenceConnectionsScehma },
 });
@@ -24,6 +33,7 @@ const UserSearchfieldsSchema = new Schema<IUserSearchFields>({
 
 export interface IUser {
     id: string;
+    role: IUserRole;
     aboutUser: string;
     backgroundImageUrl: string;
     connectionCount: number;
@@ -51,6 +61,7 @@ const UserSchema = new Schema<IUser>(
     {
         id: { type: String, hashKey: true },
         aboutUser: { type: String },
+        role: { type: Object, schema: UserRoleSchema },
         backgroundImageUrl: { type: String },
         connectionCount: { type: Number },
         currentPosition: { type: String },
