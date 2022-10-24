@@ -16,7 +16,7 @@ import dynamoose from 'dynamoose';
 import { HttpError } from '../error';
 import { ERROR_CODES, ERROR_MESSAGES } from '../../constants/errors';
 import Transaction from 'dynamoose/dist/Transaction';
-import { ISettings } from '../../models/settings';
+import { IUserSettings } from '../../models/userSettings';
 
 export const getNewUserModelFromJWTUserPayload = async (
     jwtUserPayload: ICognitoUserInfoApiResponse
@@ -25,7 +25,7 @@ export const getNewUserModelFromJWTUserPayload = async (
     const newExperience: IExperiences = await DBQueries.createExperiences();
     const newSkills: ISkills = await DBQueries.createSkills();
     const newProjects: IProjects = await DBQueries.createProjects();
-    const newSettings: ISettings = await DBQueries.createSettings(false, false, true, 'dark');
+    const newSettings: IUserSettings = await DBQueries.createSettings();
     const newUser: IUser = {
         id: v4(),
         aboutUser: '',

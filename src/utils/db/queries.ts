@@ -5,7 +5,7 @@ import Connection, { IConnection } from '../../models/connection';
 import Follow, { IFollow } from '../../models/follow';
 import { fetchDynamoDBPaginatedDocuments, fetchMongoDBPaginatedDocuments, IFollowResourceValues } from './helpers';
 import Projects, { IProject, IProjects } from '../../models/projects';
-import Settings, { ISettings, IEditableSettings } from '../../models/settings';
+import Settings, { IUserSettings, IEditableUserSettings } from '../../models/userSettings';
 import Experiences, { IExperience, IExperiences } from '../../models/experience';
 import Certifications, { ICertifications, ICertification } from '../../models/certifications';
 import Feedback, { IFeedback } from '../../models/feedbacks';
@@ -211,16 +211,28 @@ const createSkills = async (): Promise<ISkills> => {
     return skills;
 };
 
-const createSettings = async (gender: boolean, dob: boolean, location: boolean, theme: string): Promise<ISettings> => {
-    const settings: ISettings = {
+const createSettings = async (): Promise<IUserSettings> => {
+    const settings: IUserSettings = {
         id: v4(),
-        gender,
-        dob,
-        location,
-        theme,
+        display: { theme: 'light' },
+        privacy: {
+            location: 'public',
+            dateOfBirth: 'private',
+            gender: 'private',
+            profilePhotos: 'public',
+            email: 'public',
+            phone: 'public',
+        },
+        visibility: {
+            activeStatus: 'public',
+            userBlockingInfo: [],
+        },
+        communications: {
+            connectionInvite: 'all',
+        },
     };
-    const skillsObj = new Skills(settings);
-    skillsObj.save();
+    const settingssObj = new Settings(settings);
+    settingssObj.save();
     return settings;
 };
 
@@ -279,20 +291,45 @@ const updateProjects = async (projectsId: string, projects: Array<IProject>): Pr
     return await Projects.update({ id: projectsId }, { projects: projects });
 };
 
-const getSettings = async (settingsId: string): Promise<ISettings> => {
+const getUserSetting = async (settingsId: string): Promise<IUserSettings> => {
     return await Settings.get({ id: settingsId });
 };
 
-const changeSettings = async (settingsId: string, value: IEditableSettings): Promise<ISettings> => {
-    const changedSettings: ISettings | null = await Settings.update({ id: settingsId }, value);
-    if (!changedSettings) {
+const changeUserSettings = async (
+    settingsId: string,
+    settingsUpdateDetails: IEditableUserSettings
+): Promise<IUserSettings> => {
+    const settingsInfo: IUserSettings = await Settings.get({ id: settingsId });
+    // get whole doc and update
+    if (!settingsInfo) {
         throw new HttpError(ERROR_MESSAGES.RESOURCE_NOT_FOUND, 404);
     }
+    const data = {
+        communications: {
+            connectionInvite: settingsUpdateDetails.communications.connectionInvite,
+        },
+        display: {
+            theme: settingsUpdateDetails.display.theme,
+        },
+        privacy: {
+            dateOfBirth: settingsUpdateDetails.privacy.dateOfBirth,
+            email: settingsUpdateDetails.privacy.email,
+            gender: settingsUpdateDetails.privacy.gender,
+            location: settingsUpdateDetails.privacy.location,
+            phone: settingsUpdateDetails.privacy.phone,
+            profilePhotos: settingsUpdateDetails.privacy.profilePhotos,
+        },
+        visibility: {
+            activeStatus: settingsUpdateDetails.visibility.activeStatus,
+            userBlockingInfo: settingsUpdateDetails.visibility.userBlockingInfo,
+        },
+    };
+    const changedSettings = await Settings.update({ id: settingsId }, data);
     return changedSettings;
 };
 
 const DBQueries = {
-    getSettings,
+    getUserSetting,
     getConnectionById,
     getConnection,
     createUser,
@@ -319,7 +356,7 @@ const DBQueries = {
     getConnections,
     updateUserConnectionCountQuery,
     updateUserFollowCountQuery,
-    changeSettings,
+    changeUserSettings,
     createSettings,
 };
 

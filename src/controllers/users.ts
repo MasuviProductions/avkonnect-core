@@ -24,7 +24,6 @@ import {
     getExpandedUserSkillSetEndorsers,
 } from '../utils/transformers';
 import { ObjectType } from 'dynamoose/dist/General';
-import { IEditableSettings } from '../models/settings';
 
 const getUserProfile = async (
     req: Request,
@@ -605,7 +604,8 @@ const getUserSettings = async (
         }
     }
     const userSettingsRefId = await DBQueries.getUserById(userId);
-    const userSettings = await DBQueries.getSettings(userSettingsRefId.settingsRefId);
+    console.log('userSettingsRefId: ', userSettingsRefId.settingsRefId);
+    const userSettings = await DBQueries.getUserSetting(userSettingsRefId.settingsRefId);
     const response: HttpResponse = {
         success: true,
         data: userSettings,
@@ -624,7 +624,7 @@ const settingsProperties = async (
         throw new HttpError(err.array()[0].param, 400, ERROR_CODES.INVALID_ERROR);
     }
     const userId = req.params.user_id;
-    const settingsUpdateDetails: IEditableSettings = req.body;
+    const settingsUpdateDetails = req.body;
     const authUser = req.authUser;
     const isUserToken = req.isUserToken;
     if (isUserToken) {
@@ -633,7 +633,7 @@ const settingsProperties = async (
         }
     }
     const settings = await DBQueries.getUserById(userId);
-    const user = await DBQueries.changeSettings(settings.settingsRefId, settingsUpdateDetails);
+    const user = await DBQueries.changeUserSettings(settings.settingsRefId, settingsUpdateDetails);
     console.log('change of settings info: ', user);
     const response: HttpResponse = {
         success: true,
