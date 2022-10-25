@@ -604,7 +604,6 @@ const getUserSettings = async (
         }
     }
     const userSettingsRefId = await DBQueries.getUserById(userId);
-    console.log('userSettingsRefId: ', userSettingsRefId.settingsRefId);
     const userSettings = await DBQueries.getUserSetting(userSettingsRefId.settingsRefId);
     const response: HttpResponse = {
         success: true,
@@ -634,7 +633,6 @@ const settingsProperties = async (
     }
     const settings = await DBQueries.getUserById(userId);
     const user = await DBQueries.changeUserSettings(settings.settingsRefId, settingsUpdateDetails);
-    console.log('change of settings info: ', user);
     const response: HttpResponse = {
         success: true,
         data: user,

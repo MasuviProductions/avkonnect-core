@@ -299,11 +299,6 @@ const changeUserSettings = async (
     settingsId: string,
     settingsUpdateDetails: IEditableUserSettings
 ): Promise<IUserSettings> => {
-    const settingsInfo: IUserSettings = await Settings.get({ id: settingsId });
-    // get whole doc and update
-    if (!settingsInfo) {
-        throw new HttpError(ERROR_MESSAGES.RESOURCE_NOT_FOUND, 404);
-    }
     const data = {
         communications: {
             connectionInvite: settingsUpdateDetails.communications.connectionInvite,
