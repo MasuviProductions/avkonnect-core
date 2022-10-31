@@ -612,7 +612,7 @@ const getUserSettings = async (
     return res.status(200).json(response);
 };
 
-const settingsProperties = async (
+const updateUserSettings = async (
     req: Request,
     res: Response,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -631,11 +631,11 @@ const settingsProperties = async (
             throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
         }
     }
-    const settings = await DBQueries.getUserById(userId);
-    const user = await DBQueries.changeUserSettings(settings.settingsRefId, settingsUpdateDetails);
+    const user = await DBQueries.getUserById(userId);
+    const userSettings = await DBQueries.changeUserSettings(user.settingsRefId, settingsUpdateDetails);
     const response: HttpResponse = {
         success: true,
-        data: user,
+        data: userSettings,
     };
     return res.status(200).json(response);
 };
@@ -663,7 +663,7 @@ const USER_CONTROLLER = {
     getUserCertifications: asyncHandler(getUserCertifications),
     putUserCertifications: asyncHandler(putUserCertifications),
     postUserFeedback: asyncHandler(postUserFeedback),
-    settingsProperties: asyncHandler(settingsProperties),
+    updateUserSettings: asyncHandler(updateUserSettings),
 };
 
 export default USER_CONTROLLER;

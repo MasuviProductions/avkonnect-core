@@ -24,7 +24,7 @@ USER_ROUTER.use('/:user_id/certifications', userCertificationsRouter);
 USER_ROUTER.use('/:user_id/feedback', userFeedbackRouter);
 USER_ROUTER.use('/:user_id/settings', userSettingsProperties);
 
-userSettingsProperties.route('/').patch(USER_CONTROLLER.settingsProperties).get(USER_CONTROLLER.getUserSettings);
+userSettingsProperties.route('/').patch(USER_CONTROLLER.updateUserSettings).get(USER_CONTROLLER.getUserSettings);
 
 userFeedbackRouter.route('/').post(USER_CONTROLLER.postUserFeedback);
 
