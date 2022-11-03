@@ -230,6 +230,10 @@ const createSettings = async (): Promise<IUserSettings> => {
         communications: {
             connectionInvite: 'all',
         },
+        feedPreference: {
+            favourites: [],
+            recentOnly: false,
+        },
     };
     const settingssObj = new Settings(settings);
     settingssObj.save();
@@ -317,6 +321,10 @@ const changeUserSettings = async (
         visibility: {
             activeStatus: settingsUpdateDetails.visibility.activeStatus,
             userBlockingInfo: settingsUpdateDetails.visibility.userBlockingInfo,
+        },
+        feedPreference: {
+            favourites: settingsUpdateDetails.feedPreference.favourites,
+            recentOnly: settingsUpdateDetails.feedPreference.recentOnly,
         },
     };
     const changedSettings = await Settings.update({ id: settingsId }, data);

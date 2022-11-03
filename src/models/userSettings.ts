@@ -31,7 +31,7 @@ const UserSettingsPrivacy = new dynamoose.Schema({
 });
 
 export interface IUserSettingsCommunications {
-    connectionInvite: 'all' | 'emailPrompt';
+    connectionInvite: 'all' | 'emailPrompt' | 'phonePrompt' | 'messagePrompt';
 }
 
 const UserSettingsCommunications = new dynamoose.Schema({
@@ -48,12 +48,23 @@ const UserSettingsVisibility = new dynamoose.Schema({
     userBlockingInfo: { type: Array, schema: Array.of(String) },
 });
 
+export interface IUserFeedPreferences {
+    recentOnly: boolean;
+    favourites: Array<string>;
+}
+
+const UserFeedPreferences = new dynamoose.Schema({
+    favourites: { type: Array, schema: Array.of(String) },
+    recentOnly: { type: Boolean },
+});
+
 export interface IUserSettings {
     id: string;
     display: IUserSettingsDisplay;
     privacy: IUserSettingsPrivacy;
     visibility: IUserSettingsVisibility;
     communications: IUserSettingsCommunications;
+    feedPreference: IUserFeedPreferences;
 }
 
 const SettingsSchema = new dynamoose.Schema(
@@ -63,6 +74,7 @@ const SettingsSchema = new dynamoose.Schema(
         privacy: { type: Object, schema: UserSettingsPrivacy },
         visibility: { type: Object, schema: UserSettingsVisibility },
         communications: { type: Object, schema: UserSettingsCommunications },
+        feedPreference: { type: Object, schema: UserFeedPreferences },
     },
     {
         timestamps: true,
@@ -75,4 +87,7 @@ export default Settings;
 
 export const READABLE_USER_PROPERTIES = ['id'] as const;
 
-export type IEditableUserSettings = Pick<IUserSettings, 'display' | 'privacy' | 'visibility' | 'communications'>;
+export type IEditableUserSettings = Pick<
+    IUserSettings,
+    'display' | 'privacy' | 'visibility' | 'communications' | 'feedPreference'
+>;
