@@ -22,6 +22,26 @@ const UserSearchfieldsSchema = new Schema<IUserSearchFields>({
     name: { type: String },
 });
 
+export interface IProfilePictureImage {
+    res: string;
+    url: string;
+}
+
+const profilePictureImage = new Schema<IProfilePictureImage>({
+    res: { type: String },
+    url: { type: String },
+});
+
+export interface IBackgroundPictureImage {
+    res: string;
+    url: string;
+}
+
+const backgroundPictureImage = new Schema<IBackgroundPictureImage>({
+    res: { type: String },
+    url: { type: String },
+});
+
 export interface IUser {
     id: string;
     aboutUser: string;
@@ -45,6 +65,8 @@ export interface IUser {
     skillsRefId: string;
     certificationsRefId: string;
     unseenNotificationsCount?: number;
+    profilePictureImages: Array<IProfilePictureImage>;
+    backgroundPictureImages: Array<IBackgroundPictureImage>;
 }
 const UserSchema = new Schema<IUser>(
     {
@@ -69,6 +91,8 @@ const UserSchema = new Schema<IUser>(
         searchFields: { type: Object, schema: UserSearchfieldsSchema },
         skillsRefId: { type: String },
         certificationsRefId: { type: String },
+        profilePictureImages: { type: Array, schema: Array.of(profilePictureImage) },
+        backgroundPictureImages: { type: Array, schema: Array.of(backgroundPictureImage) },
     },
     {
         timestamps: true,
@@ -103,4 +127,6 @@ export type IEditableUser = Pick<
     | 'phone'
     | 'preferences'
     | 'unseenNotificationsCount'
+    | 'backgroundPictureImages'
+    | 'profilePictureImages'
 >;
