@@ -632,7 +632,7 @@ const updateUserSettings = async (
         }
     }
     const user = await DBQueries.getUserById(userId);
-    const userSettings = await DBQueries.changeUserSettings(user.settingsRefId, settingsUpdateDetails);
+    const userSettings = await DBQueries.updateUserSettings(user.settingsRefId, settingsUpdateDetails);
     const response: HttpResponse = {
         success: true,
         data: userSettings,

@@ -10,15 +10,15 @@ const UserSettingsDisplay = new dynamoose.Schema({
     theme: { type: String },
 });
 
-export type IUserSettingsConnectionOnlyOptionSelection = 'public' | 'connectionsOnly' | 'private';
+export type IUserSettingsPrivacyOption = 'public' | 'connectionsOnly' | 'private';
 
 export interface IUserSettingsPrivacy {
-    location: IUserSettingsConnectionOnlyOptionSelection;
-    dateOfBirth: IUserSettingsConnectionOnlyOptionSelection;
-    gender: IUserSettingsConnectionOnlyOptionSelection;
-    profilePhotos: IUserSettingsConnectionOnlyOptionSelection;
-    email: IUserSettingsConnectionOnlyOptionSelection;
-    phone: IUserSettingsConnectionOnlyOptionSelection;
+    location: IUserSettingsPrivacyOption;
+    dateOfBirth: IUserSettingsPrivacyOption;
+    gender: IUserSettingsPrivacyOption;
+    profilePhotos: IUserSettingsPrivacyOption;
+    email: IUserSettingsPrivacyOption;
+    phone: IUserSettingsPrivacyOption;
 }
 
 const UserSettingsPrivacy = new dynamoose.Schema({
@@ -39,7 +39,7 @@ const UserSettingsCommunications = new dynamoose.Schema({
 });
 
 export interface IUserSettingsVisibility {
-    activeStatus: IUserSettingsConnectionOnlyOptionSelection;
+    activeStatus: IUserSettingsPrivacyOption;
     userBlockingInfo: Array<string>;
 }
 
@@ -67,7 +67,7 @@ export interface IUserSettings {
     feedPreference: IUserFeedPreferences;
 }
 
-const SettingsSchema = new dynamoose.Schema(
+const UserSettingsSchema = new dynamoose.Schema(
     {
         id: { type: String, hashKey: true },
         display: { type: Object, schema: UserSettingsDisplay },
@@ -81,7 +81,7 @@ const SettingsSchema = new dynamoose.Schema(
     }
 );
 
-const Settings = dynamoose.model<IDynamooseDocument<IUserSettings>>(TABLE.SETTINGS, SettingsSchema);
+const Settings = dynamoose.model<IDynamooseDocument<IUserSettings>>(TABLE.SETTINGS, UserSettingsSchema);
 
 export default Settings;
 

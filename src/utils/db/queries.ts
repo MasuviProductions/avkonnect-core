@@ -299,7 +299,7 @@ const getUserSetting = async (settingsId: string): Promise<IUserSettings> => {
     return await Settings.get({ id: settingsId });
 };
 
-const changeUserSettings = async (
+const updateUserSettings = async (
     settingsId: string,
     settingsUpdateDetails: IEditableUserSettings
 ): Promise<IUserSettings> => {
@@ -359,7 +359,7 @@ const DBQueries = {
     getConnections,
     updateUserConnectionCountQuery,
     updateUserFollowCountQuery,
-    changeUserSettings,
+    updateUserSettings,
     createSettings,
 };
 
