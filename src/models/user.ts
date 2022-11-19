@@ -23,12 +23,12 @@ const UserSearchfieldsSchema = new Schema<IUserSearchFields>({
 });
 
 export interface IProfilePictureImage {
-    res: string;
+    resolution: string;
     url: string;
 }
 
 const profilePictureImage = new Schema<IProfilePictureImage>({
-    res: { type: String },
+    resolution: { type: String },
     url: { type: String },
 });
 
@@ -91,14 +91,14 @@ const UserSchema = new Schema<IUser>(
         searchFields: { type: Object, schema: UserSearchfieldsSchema },
         skillsRefId: { type: String },
         certificationsRefId: { type: String },
-        profilePictureImages: { type: Array, schema: Array.of(profilePictureImage) },
-        backgroundPictureImages: { type: Array, schema: Array.of(backgroundPictureImage) },
     },
     {
         timestamps: true,
     }
 );
 UserSchema.add({ unseenNotificationsCount: { type: Number } });
+UserSchema.add({ profilePictureImages: { type: Array.of(profilePictureImage) } });
+UserSchema.add({ backgroundPictureImages: { type: Array.of(backgroundPictureImage) } });
 
 export default mongoose.model<IUser>(TABLE.USERS, UserSchema);
 
