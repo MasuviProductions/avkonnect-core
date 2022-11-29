@@ -2,8 +2,10 @@ import * as dynamoose from 'dynamoose';
 import { TABLE } from '../constants/db';
 import { IDynamooseDocument } from '../interfaces/generic';
 
-interface IUserSettingsDisplay {
-    theme: string;
+export type IUserSettingsDisplayOption = 'light' | 'dark';
+
+export interface IUserSettingsDisplay {
+    theme: IUserSettingsDisplayOption;
 }
 
 const UserSettingsDisplay = new dynamoose.Schema({
@@ -30,8 +32,10 @@ const UserSettingsPrivacy = new dynamoose.Schema({
     phone: { type: String },
 });
 
+export type IUserSettingsCommunicationsOption = 'all' | 'emailPrompt' | 'phonePrompt' | 'messagePrompt';
+
 export interface IUserSettingsCommunications {
-    connectionInvite: 'all' | 'emailPrompt' | 'phonePrompt' | 'messagePrompt';
+    connectionInvite: IUserSettingsCommunicationsOption;
 }
 
 const UserSettingsCommunications = new dynamoose.Schema({
@@ -64,7 +68,17 @@ export interface IUserSettings {
     privacy: IUserSettingsPrivacy;
     visibility: IUserSettingsVisibility;
     communications: IUserSettingsCommunications;
-    feedPreference: IUserFeedPreferences;
+    updatedAt?: Date;
+    feedPreference?: IUserFeedPreferences;
+}
+
+export type IFieldOperationValue = 'addition' | 'deletion';
+
+export interface ISettingsUpdateDetail {
+    fieldName: string;
+    fieldKey: string;
+    fieldValue: string | boolean;
+    fieldOperation?: IFieldOperationValue;
 }
 
 const UserSettingsSchema = new dynamoose.Schema(

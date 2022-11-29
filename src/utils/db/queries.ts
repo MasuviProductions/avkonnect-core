@@ -5,7 +5,16 @@ import Connection, { IConnection } from '../../models/connection';
 import Follow, { IFollow } from '../../models/follow';
 import { fetchDynamoDBPaginatedDocuments, fetchMongoDBPaginatedDocuments, IFollowResourceValues } from './helpers';
 import Projects, { IProject, IProjects } from '../../models/projects';
-import Settings, { IUserSettings, IEditableUserSettings } from '../../models/userSettings';
+import Settings, {
+    IUserSettings,
+    IUserSettingsDisplay,
+    IUserSettingsPrivacy,
+    IUserSettingsCommunications,
+    IUserSettingsPrivacyOption,
+    IUserSettingsCommunicationsOption,
+    IUserSettingsDisplayOption,
+    ISettingsUpdateDetail,
+} from '../../models/userSettings';
 import Experiences, { IExperience, IExperiences } from '../../models/experience';
 import Certifications, { ICertifications, ICertification } from '../../models/certifications';
 import Feedback, { IFeedback } from '../../models/feedbacks';
@@ -301,34 +310,64 @@ const getUserSetting = async (settingsId: string): Promise<IUserSettings> => {
 
 const updateUserSettings = async (
     settingsId: string,
-    settingsUpdateDetails: IEditableUserSettings
-): Promise<IUserSettings> => {
-    const data = {
-        communications: {
-            connectionInvite: settingsUpdateDetails.communications.connectionInvite,
-        },
-        display: {
-            theme: settingsUpdateDetails.display.theme,
-        },
-        privacy: {
-            dateOfBirth: settingsUpdateDetails.privacy.dateOfBirth,
-            email: settingsUpdateDetails.privacy.email,
-            gender: settingsUpdateDetails.privacy.gender,
-            location: settingsUpdateDetails.privacy.location,
-            phone: settingsUpdateDetails.privacy.phone,
-            profilePhotos: settingsUpdateDetails.privacy.profilePhotos,
-        },
-        visibility: {
-            activeStatus: settingsUpdateDetails.visibility.activeStatus,
-            userBlockingInfo: settingsUpdateDetails.visibility.userBlockingInfo,
-        },
-        feedPreference: {
-            favourites: settingsUpdateDetails.feedPreference.favourites,
-            recentOnly: settingsUpdateDetails.feedPreference.recentOnly,
-        },
-    };
-    const changedSettings = await Settings.update({ id: settingsId }, data);
-    return changedSettings;
+    settingsUpdateDetails: Array<ISettingsUpdateDetail>
+): Promise<IUserSettings | undefined> => {
+    const settings = await Settings.get({ id: settingsId });
+    const settingsJson = settings.toJSON();
+    settingsUpdateDetails.forEach((update) => {
+        switch (update.fieldName) {
+            case 'display': {
+                settingsJson.display[update.fieldKey as keyof IUserSettingsDisplay] =
+                    update.fieldValue as IUserSettingsDisplayOption;
+                break;
+            }
+            case 'privacy': {
+                settingsJson.privacy[update.fieldKey as keyof IUserSettingsPrivacy] =
+                    update.fieldValue as IUserSettingsPrivacyOption;
+                break;
+            }
+            case 'communications': {
+                settingsJson.communications[update.fieldKey as unknown as keyof IUserSettingsCommunications] =
+                    update.fieldValue as IUserSettingsCommunicationsOption;
+                break;
+            }
+            case 'visibility': {
+                if (update.fieldKey == 'activeStatus') {
+                    settingsJson.visibility.activeStatus = update.fieldValue as IUserSettingsPrivacyOption;
+                } else if (update.fieldOperation == 'addition') {
+                    settingsJson.visibility.userBlockingInfo.push(update.fieldValue as string);
+                } else {
+                    const index = settingsJson.visibility.userBlockingInfo.indexOf(update.fieldValue as string);
+                    if (index > -1) {
+                        settingsJson.visibility.userBlockingInfo.splice(index, 1);
+                    }
+                }
+
+                break;
+            }
+            case 'feedPreference': {
+                if (!settingsJson.feedPreference) {
+                    return undefined;
+                }
+                if (update.fieldKey == 'recentOnly') {
+                    settingsJson.feedPreference.recentOnly = update.fieldValue as boolean;
+                    break;
+                } else if (update.fieldOperation == 'addition') {
+                    settingsJson.feedPreference.favourites.push(update.fieldValue as string);
+                } else {
+                    const index = settingsJson.feedPreference.favourites.indexOf(update.fieldValue as string);
+                    if (index > -1) {
+                        settingsJson.feedPreference.favourites.splice(index, 1);
+                    }
+                }
+            }
+        }
+    });
+    delete settingsJson.updatedAt;
+    delete settingsJson.createdAt;
+    delete settingsJson.id;
+    const updatedSettings = await Settings.update({ id: settingsId }, settingsJson);
+    return updatedSettings;
 };
 
 const DBQueries = {
