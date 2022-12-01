@@ -33,12 +33,12 @@ const profilePictureImage = new Schema<IProfilePictureImage>({
 });
 
 export interface IBackgroundPictureImage {
-    res: string;
+    resolution: string;
     url: string;
 }
 
 const backgroundPictureImage = new Schema<IBackgroundPictureImage>({
-    res: { type: String },
+    resolution: { type: String },
     url: { type: String },
 });
 
