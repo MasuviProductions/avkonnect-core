@@ -244,7 +244,7 @@ const createSettings = async (): Promise<IUserSettings> => {
             recentOnly: false,
         },
     };
-    const settingssObj = new Settings(settings);
+    const settingssObj = await new Settings(settings);
     settingssObj.save();
     return settings;
 };
@@ -327,39 +327,50 @@ const updateUserSettings = async (
                 break;
             }
             case 'communications': {
-                settingsJson.communications[update.fieldKey as unknown as keyof IUserSettingsCommunications] =
+                settingsJson.communications[update.fieldKey as keyof IUserSettingsCommunications] =
                     update.fieldValue as IUserSettingsCommunicationsOption;
                 break;
             }
             case 'visibility': {
-                if (update.fieldKey == 'activeStatus') {
-                    settingsJson.visibility.activeStatus = update.fieldValue as IUserSettingsPrivacyOption;
-                } else if (update.fieldOperation == 'addition') {
-                    settingsJson.visibility.userBlockingInfo.push(update.fieldValue as string);
-                } else {
-                    const index = settingsJson.visibility.userBlockingInfo.indexOf(update.fieldValue as string);
-                    if (index > -1) {
-                        settingsJson.visibility.userBlockingInfo.splice(index, 1);
+                switch (update.fieldKey) {
+                    case 'activeStatus': {
+                        settingsJson.visibility.activeStatus = update.fieldValue as IUserSettingsPrivacyOption;
+                        break;
+                    }
+                    case 'userBlockingInfo': {
+                        if (update.fieldOperation == 'addition') {
+                            settingsJson.visibility.userBlockingInfo.push(update.fieldValue as string);
+                        } else if (update.fieldOperation == 'deletion') {
+                            const index = settingsJson.visibility.userBlockingInfo.indexOf(update.fieldValue as string);
+                            if (index > -1) {
+                                settingsJson.visibility.userBlockingInfo.splice(index, 1);
+                            }
+                        }
+                        break;
                     }
                 }
 
                 break;
             }
             case 'feedPreference': {
-                if (!settingsJson.feedPreference) {
-                    return undefined;
-                }
-                if (update.fieldKey == 'recentOnly') {
-                    settingsJson.feedPreference.recentOnly = update.fieldValue as boolean;
-                    break;
-                } else if (update.fieldOperation == 'addition') {
-                    settingsJson.feedPreference.favourites.push(update.fieldValue as string);
-                } else {
-                    const index = settingsJson.feedPreference.favourites.indexOf(update.fieldValue as string);
-                    if (index > -1) {
-                        settingsJson.feedPreference.favourites.splice(index, 1);
+                switch (update.fieldKey) {
+                    case 'recentOnly': {
+                        settingsJson.feedPreference.recentOnly = update.fieldValue as boolean;
+                        break;
+                    }
+                    case 'favourites': {
+                        if (update.fieldOperation == 'addition') {
+                            settingsJson.feedPreference.favourites.push(update.fieldValue as string);
+                        } else if (update.fieldOperation == 'deletion') {
+                            const index = settingsJson.feedPreference.favourites.indexOf(update.fieldValue as string);
+                            if (index > -1) {
+                                settingsJson.feedPreference.favourites.splice(index, 1);
+                            }
+                        }
+                        break;
                     }
                 }
+                break;
             }
         }
     });
