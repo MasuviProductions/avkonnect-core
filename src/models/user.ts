@@ -22,24 +22,46 @@ const UserSearchfieldsSchema = new Schema<IUserSearchFields>({
     name: { type: String },
 });
 
+export type IOrientation = 'portrait' | 'landscape';
+
+export type IProfilePictureImageType =
+    | 'displayPictureOriginal'
+    | 'displayPictureThumbnail'
+    | 'displayPictureMax'
+    | 'displayPictureStandard';
+
 export interface IProfilePictureImage {
     resolution: string;
     url: string;
+    orientation: IOrientation;
+    type: IProfilePictureImageType;
 }
 
 const profilePictureImage = new Schema<IProfilePictureImage>({
     resolution: { type: String },
     url: { type: String },
+    orientation: { type: String },
+    type: { type: String },
 });
+
+export type IBackgroundPictureImageType =
+    | 'backgroundPictureOriginal'
+    | 'backgroundPictureThumbnail'
+    | 'backgroundPictureMax'
+    | 'backgroundPictureStandard';
 
 export interface IBackgroundPictureImage {
     resolution: string;
     url: string;
+    orientation: IOrientation;
+    type: IBackgroundPictureImageType;
 }
 
 const backgroundPictureImage = new Schema<IBackgroundPictureImage>({
     resolution: { type: String },
     url: { type: String },
+    orientation: { type: String },
+    type: { type: String },
 });
 
 export interface IUser {
