@@ -244,8 +244,8 @@ const createSettings = async (): Promise<IUserSettings> => {
             recentOnly: false,
         },
     };
-    const settingssObj = new Settings(settings);
-    await settingssObj.save();
+    const settingsObj = new Settings(settings);
+    await settingsObj.save();
     return settings;
 };
 
