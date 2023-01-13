@@ -14,6 +14,7 @@ import { HttpError } from '../error';
 import { ERROR_CODES, ERROR_MESSAGES } from '../../constants/errors';
 import { IConnectionType } from '../../interfaces/api';
 import { ObjectType } from 'dynamoose/dist/General';
+import Otp, { IOtp } from '../../models/otp';
 
 const getAuthUserByEmail = async (email: string): Promise<IUser | undefined> => {
     const user: IUser | null = await User.findOne({
@@ -265,7 +266,35 @@ const updateProjects = async (projectsId: string, projects: Array<IProject>): Pr
     return await Projects.update({ id: projectsId }, { projects: projects });
 };
 
+const storeOtp = async (phone: number, otp: number): Promise<IOtp> => {
+    const createdOtp: IOtp = {
+        phone: phone,
+        otp: otp,
+        time: new Date().getTime(),
+    };
+    const otpObj = new Otp(createdOtp);
+    await otpObj.save();
+    return createdOtp;
+};
+
+const getOtp = async (phone: number): Promise<IOtp> => {
+    return await Otp.get({ phone: phone });
+};
+
+const deleteOtp = async (phone: number): Promise<Partial<IOtp>> => {
+    try {
+        await Otp.delete({ phone: phone });
+        return { phone: phone };
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
+};
+
 const DBQueries = {
+    deleteOtp,
+    storeOtp,
+    getOtp,
     getConnectionById,
     getConnection,
     createUser,

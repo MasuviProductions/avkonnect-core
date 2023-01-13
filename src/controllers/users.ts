@@ -8,6 +8,7 @@ import { HttpResponse } from '../interfaces/generic';
 import { IConnectionType, INotificationActivity } from '../interfaces/api';
 import { IEditableUser } from '../models/user';
 import { ISkillSet } from '../models/skills';
+import axios from 'axios';
 import { IProject } from '../models/projects';
 import { IExperience } from '../models/experience';
 import { ICertification } from '../models/certifications';
@@ -589,7 +590,56 @@ const getUsersInfo = async (
     return res.status(200).json(response);
 };
 
+const generateOtp = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const otp = Math.floor(10000 + Math.random() * 90000);
+    const {
+        body: { phone },
+    } = req;
+    if (String(phone).length != 10) {
+        res.status(400).send('Please type the correct phone number');
+    }
+    const otpStore = await DBQueries.storeOtp(phone, otp);
+    const data = await axios.get(
+        `https://api.authkey.io/request?authkey=${process.env.SMS_AUTHKEY}=${phone}&country_code=91&sid=6719&otp=${otp}`
+    );
+    if (!data) {
+        res.status(500).send('OTP could not be sent to' + otpStore.phone);
+    }
+    res.status(200).send('OTP sent to: ' + otpStore.phone);
+};
+
+const verifyOtp = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const otp = req.body.otp;
+    const userId = req.params.user_id;
+    const phone = req.body.phone;
+    const timeNow = new Date().getTime();
+    const checkOtp = await DBQueries.getOtp(phone);
+    const minutesPassed = (timeNow - checkOtp.time) / (1000 * 60);
+    if (minutesPassed > 10.5) {
+        await DBQueries.deleteOtp(phone);
+        res.status(400).send('Time out please resend the OTP');
+    }
+    if (otp != checkOtp.otp) {
+        res.status(400).send('Incorrect OTP');
+    }
+    const user = await DBQueries.updateUser(userId, { phone: phone } as IEditableUser);
+    await DBQueries.deleteOtp(phone);
+    res.status(200).send('Verified OTP for: ' + user.id);
+};
+
 const USER_CONTROLLER = {
+    verifyOtp: asyncHandler(verifyOtp),
+    generateOtp: asyncHandler(generateOtp),
     getUsersInfo: asyncHandler(getUsersInfo),
     getUserProfile: asyncHandler(getUserProfile),
     patchUserProfile: asyncHandler(patchUserProfile),

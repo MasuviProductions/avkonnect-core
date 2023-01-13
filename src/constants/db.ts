@@ -9,4 +9,5 @@ export const TABLE = {
     EXPERIENCES: `avk-${ENV.DEPLOYMENT_ENV}-experiences`,
     CERTIFICATIONS: `avk-${ENV.DEPLOYMENT_ENV}-certifications`,
     FEEDBACKS: `avk-${ENV.DEPLOYMENT_ENV}-feedbacks`,
+    OTP: `avk-${ENV.DEPLOYMENT_ENV}-otp`,
 };

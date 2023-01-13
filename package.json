@@ -43,6 +43,7 @@
         "mongoose": "^6.2.1",
         "node-cache": "^5.1.2",
         "path-to-regexp": "^6.2.0",
+        "request": "^2.88.2",
         "serverless-http": "^2.7.0",
         "uuidv4": "^6.2.12"
     },
