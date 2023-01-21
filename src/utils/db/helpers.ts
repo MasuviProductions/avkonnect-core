@@ -5,7 +5,7 @@ import { HttpDynamoDBResponsePagination, HttpResponsePagination } from '../../in
 import { IDynamooseDocument } from '../../interfaces/generic';
 import { IMinifiedUser } from '../../interfaces/api';
 import { ICognitoUserInfoApiResponse } from '@masuviproductions/avkonnect-auth/lib/interfaces/jwt';
-import { IUser } from '../../models/user';
+import { IUser, IUserRole } from '../../models/user';
 import DBQueries from './queries';
 import { IProjects } from '../../models/projects';
 import { ISkills } from '../../models/skills';
@@ -24,9 +24,11 @@ export const getNewUserModelFromJWTUserPayload = async (
     const newExperience: IExperiences = await DBQueries.createExperiences();
     const newSkills: ISkills = await DBQueries.createSkills();
     const newProjects: IProjects = await DBQueries.createProjects();
+    const newRole: IUserRole = 'user';
     const newUser: IUser = {
         id: v4(),
         aboutUser: '',
+        role: newRole,
         backgroundImageUrl: '',
         connectionCount: 0,
         currentPosition: '',
