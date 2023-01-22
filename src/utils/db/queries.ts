@@ -5,6 +5,16 @@ import Connection, { IConnection } from '../../models/connection';
 import Follow, { IFollow } from '../../models/follow';
 import { fetchDynamoDBPaginatedDocuments, fetchMongoDBPaginatedDocuments, IFollowResourceValues } from './helpers';
 import Projects, { IProject, IProjects } from '../../models/projects';
+import Settings, {
+    IUserSettings,
+    IUserSettingsDisplay,
+    IUserSettingsPrivacy,
+    IUserSettingsCommunications,
+    IUserSettingsPrivacyOption,
+    IUserSettingsCommunicationsOption,
+    IUserSettingsDisplayOption,
+    ISettingsUpdateDetail,
+} from '../../models/userSettings';
 import Experiences, { IExperience, IExperiences } from '../../models/experience';
 import Certifications, { ICertifications, ICertification } from '../../models/certifications';
 import Feedback, { IFeedback } from '../../models/feedbacks';
@@ -210,6 +220,35 @@ const createSkills = async (): Promise<ISkills> => {
     return skills;
 };
 
+const createSettings = async (): Promise<IUserSettings> => {
+    const settings: IUserSettings = {
+        id: v4(),
+        display: { theme: 'light' },
+        privacy: {
+            location: 'public',
+            dateOfBirth: 'private',
+            gender: 'private',
+            profilePhotos: 'public',
+            email: 'public',
+            phone: 'public',
+        },
+        visibility: {
+            activeStatus: 'public',
+            userBlockingInfo: [],
+        },
+        communications: {
+            connectionInvite: 'all',
+        },
+        feedPreference: {
+            favourites: [],
+            recentOnly: false,
+        },
+    };
+    const settingsObj = new Settings(settings);
+    await settingsObj.save();
+    return settings;
+};
+
 const createExperiences = async (): Promise<IExperiences> => {
     const experiences: IExperiences = {
         id: v4(),
@@ -265,7 +304,85 @@ const updateProjects = async (projectsId: string, projects: Array<IProject>): Pr
     return await Projects.update({ id: projectsId }, { projects: projects });
 };
 
+const getUserSetting = async (settingsId: string): Promise<IUserSettings> => {
+    return await Settings.get({ id: settingsId });
+};
+
+const updateUserSettings = async (
+    settingsId: string,
+    settingsUpdateDetails: Array<ISettingsUpdateDetail>
+): Promise<IUserSettings | undefined> => {
+    const settings = await Settings.get({ id: settingsId });
+    const settingsJson = settings.toJSON();
+    settingsUpdateDetails.forEach((update) => {
+        switch (update.fieldName) {
+            case 'display': {
+                settingsJson.display[update.fieldKey as keyof IUserSettingsDisplay] =
+                    update.fieldValue as IUserSettingsDisplayOption;
+                break;
+            }
+            case 'privacy': {
+                settingsJson.privacy[update.fieldKey as keyof IUserSettingsPrivacy] =
+                    update.fieldValue as IUserSettingsPrivacyOption;
+                break;
+            }
+            case 'communications': {
+                settingsJson.communications[update.fieldKey as keyof IUserSettingsCommunications] =
+                    update.fieldValue as IUserSettingsCommunicationsOption;
+                break;
+            }
+            case 'visibility': {
+                switch (update.fieldKey) {
+                    case 'activeStatus': {
+                        settingsJson.visibility.activeStatus = update.fieldValue as IUserSettingsPrivacyOption;
+                        break;
+                    }
+                    case 'userBlockingInfo': {
+                        if (update.fieldOperation == 'addition') {
+                            settingsJson.visibility.userBlockingInfo.push(update.fieldValue as string);
+                        } else if (update.fieldOperation == 'deletion') {
+                            const index = settingsJson.visibility.userBlockingInfo.indexOf(update.fieldValue as string);
+                            if (index > -1) {
+                                settingsJson.visibility.userBlockingInfo.splice(index, 1);
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                break;
+            }
+            case 'feedPreference': {
+                switch (update.fieldKey) {
+                    case 'recentOnly': {
+                        settingsJson.feedPreference.recentOnly = update.fieldValue as boolean;
+                        break;
+                    }
+                    case 'favourites': {
+                        if (update.fieldOperation == 'addition') {
+                            settingsJson.feedPreference.favourites.push(update.fieldValue as string);
+                        } else if (update.fieldOperation == 'deletion') {
+                            const index = settingsJson.feedPreference.favourites.indexOf(update.fieldValue as string);
+                            if (index > -1) {
+                                settingsJson.feedPreference.favourites.splice(index, 1);
+                            }
+                        }
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    });
+    delete settingsJson.updatedAt;
+    delete settingsJson.createdAt;
+    delete settingsJson.id;
+    const updatedSettings = await Settings.update({ id: settingsId }, settingsJson);
+    return updatedSettings;
+};
+
 const DBQueries = {
+    getUserSetting,
     getConnectionById,
     getConnection,
     createUser,
@@ -292,6 +409,8 @@ const DBQueries = {
     getConnections,
     updateUserConnectionCountQuery,
     updateUserFollowCountQuery,
+    updateUserSettings,
+    createSettings,
 };
 
 export default DBQueries;
