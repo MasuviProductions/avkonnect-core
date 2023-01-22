@@ -15,9 +15,8 @@ export type IResourceType = 'post' | 'comment' | 'connection' | 'broadcast';
 
 export type IConnectionActivity = 'connectionRequest' | 'connectionConfirmation';
 export type IPostActivity = 'postReaction' | 'postComment' | 'postCreation';
-export type ICommentActivity = 'commentReaction' | 'commentComment' | 'commentCreation';
 
-export type IResourceActivity = IConnectionActivity | IPostActivity | ICommentActivity;
+export type IResourceActivity = IConnectionActivity | IPostActivity;
 export interface INotificationActivity {
     resourceId: string;
     resourceType: IResourceType;
