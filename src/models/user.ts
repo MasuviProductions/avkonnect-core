@@ -30,14 +30,14 @@ export type IProfilePictureImageType =
     | 'displayPictureMax'
     | 'displayPictureStandard';
 
-export interface IProfilePictureImage {
+export interface IImage<T extends string = string> {
     resolution: string;
     url: string;
     orientation: IOrientation;
-    type: IProfilePictureImageType;
+    type: T;
 }
 
-const ProfilePictureImageSchema = new Schema<IProfilePictureImage>({
+const ProfilePictureImageSchema = new Schema<IImage<IProfilePictureImageType>>({
     resolution: { type: String },
     url: { type: String },
     orientation: { type: String },
@@ -52,14 +52,7 @@ export type IBackgroundPictureImageType =
     | 'backgroundPictureMax'
     | 'backgroundPictureStandard';
 
-export interface IBackgroundPictureImage {
-    resolution: string;
-    url: string;
-    orientation: IOrientation;
-    type: IBackgroundPictureImageType;
-}
-
-const BackgroundPictureImageSchema = new Schema<IBackgroundPictureImage>({
+const BackgroundPictureImageSchema = new Schema<IImage<IBackgroundPictureImageType>>({
     resolution: { type: String },
     url: { type: String },
     orientation: { type: String },
@@ -90,8 +83,8 @@ export interface IUser {
     skillsRefId: string;
     certificationsRefId: string;
     unseenNotificationsCount?: number;
-    profilePictureImages: Array<IProfilePictureImage>;
-    backgroundPictureImages: Array<IBackgroundPictureImage>;
+    profilePictureImages: Array<IImage<IProfilePictureImageType>>;
+    backgroundPictureImages: Array<IImage<IBackgroundPictureImageType>>;
 }
 const UserSchema = new Schema<IUser>(
     {
