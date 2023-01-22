@@ -22,7 +22,42 @@ const UserSearchfieldsSchema = new Schema<IUserSearchFields>({
     name: { type: String },
 });
 
+export type IOrientation = 'portrait' | 'landscape';
+
+export type IProfilePictureImageType =
+    | 'displayPictureOriginal'
+    | 'displayPictureThumbnail'
+    | 'displayPictureMax'
+    | 'displayPictureStandard';
+
+export interface IImage<T extends string = string> {
+    resolution: string;
+    url: string;
+    orientation: IOrientation;
+    type: T;
+}
+
+const ProfilePictureImageSchema = new Schema<IImage<IProfilePictureImageType>>({
+    resolution: { type: String },
+    url: { type: String },
+    orientation: { type: String },
+    type: { type: String },
+});
+
 export type IUserRole = 'user' | 'admin';
+
+export type IBackgroundPictureImageType =
+    | 'backgroundPictureOriginal'
+    | 'backgroundPictureThumbnail'
+    | 'backgroundPictureMax'
+    | 'backgroundPictureStandard';
+
+const BackgroundPictureImageSchema = new Schema<IImage<IBackgroundPictureImageType>>({
+    resolution: { type: String },
+    url: { type: String },
+    orientation: { type: String },
+    type: { type: String },
+});
 
 export interface IUser {
     id: string;
@@ -48,6 +83,8 @@ export interface IUser {
     skillsRefId: string;
     certificationsRefId: string;
     unseenNotificationsCount?: number;
+    profilePictureImages: Array<IImage<IProfilePictureImageType>>;
+    backgroundPictureImages: Array<IImage<IBackgroundPictureImageType>>;
 }
 const UserSchema = new Schema<IUser>(
     {
@@ -79,6 +116,8 @@ const UserSchema = new Schema<IUser>(
     }
 );
 UserSchema.add({ unseenNotificationsCount: { type: Number } });
+UserSchema.add({ profilePictureImages: { type: Array.of(ProfilePictureImageSchema) } });
+UserSchema.add({ backgroundPictureImages: { type: Array.of(BackgroundPictureImageSchema) } });
 
 export default mongoose.model<IUser>(TABLE.USERS, UserSchema);
 
@@ -107,4 +146,6 @@ export type IEditableUser = Pick<
     | 'phone'
     | 'preferences'
     | 'unseenNotificationsCount'
+    | 'backgroundPictureImages'
+    | 'profilePictureImages'
 >;
