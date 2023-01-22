@@ -589,7 +589,59 @@ const getUsersInfo = async (
     return res.status(200).json(response);
 };
 
+const getUserSettings = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const userId = req.params.user_id;
+    const authUser = req.authUser;
+    const isUserToken = req.isUserToken;
+    if (isUserToken) {
+        if (!authUser || authUser.id !== userId) {
+            throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+        }
+    }
+    const userSettingsRefId = await DBQueries.getUserById(userId);
+    const userSettings = await DBQueries.getUserSetting(userSettingsRefId.settingsRefId);
+    const response: HttpResponse = {
+        success: true,
+        data: userSettings,
+    };
+    return res.status(200).json(response);
+};
+
+const updateUserSettings = async (
+    req: Request,
+    res: Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: NextFunction
+) => {
+    const err = validationResult(req);
+    if (!err.isEmpty()) {
+        throw new HttpError(err.array()[0].param, 400, ERROR_CODES.INVALID_ERROR);
+    }
+    const userId = req.params.user_id;
+    const settingsUpdateDetails = req.body;
+    const authUser = req.authUser;
+    const isUserToken = req.isUserToken;
+    if (isUserToken) {
+        if (!authUser || authUser.id !== userId) {
+            throw new HttpError(ERROR_MESSAGES.FORBIDDEN_ACCESS, 403, ERROR_CODES.AUTHORIZATION_ERROR);
+        }
+    }
+    const user = await DBQueries.getUserById(userId);
+    const userSettings = await DBQueries.updateUserSettings(user.settingsRefId, settingsUpdateDetails);
+    const response: HttpResponse = {
+        success: true,
+        data: userSettings,
+    };
+    return res.status(200).json(response);
+};
+
 const USER_CONTROLLER = {
+    getUserSettings: asyncHandler(getUserSettings),
     getUsersInfo: asyncHandler(getUsersInfo),
     getUserProfile: asyncHandler(getUserProfile),
     patchUserProfile: asyncHandler(patchUserProfile),
@@ -611,6 +663,7 @@ const USER_CONTROLLER = {
     getUserCertifications: asyncHandler(getUserCertifications),
     putUserCertifications: asyncHandler(putUserCertifications),
     postUserFeedback: asyncHandler(postUserFeedback),
+    updateUserSettings: asyncHandler(updateUserSettings),
 };
 
 export default USER_CONTROLLER;
