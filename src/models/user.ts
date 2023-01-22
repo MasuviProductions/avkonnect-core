@@ -22,8 +22,11 @@ const UserSearchfieldsSchema = new Schema<IUserSearchFields>({
     name: { type: String },
 });
 
+export type IUserRole = 'user' | 'admin';
+
 export interface IUser {
     id: string;
+    role: IUserRole;
     aboutUser: string;
     backgroundImageUrl: string;
     connectionCount: number;
@@ -49,6 +52,7 @@ export interface IUser {
 const UserSchema = new Schema<IUser>(
     {
         id: { type: String, hashKey: true },
+        role: { type: String },
         aboutUser: { type: String },
         backgroundImageUrl: { type: String },
         connectionCount: { type: Number },
