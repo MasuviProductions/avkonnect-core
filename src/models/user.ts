@@ -22,11 +22,15 @@ const UserSearchfieldsSchema = new Schema<IUserSearchFields>({
     name: { type: String },
 });
 
-export type IProfilePictureImageType =
+export type IUserImageType =
     | 'displayPictureOriginal'
     | 'displayPictureThumbnail'
     | 'displayPictureMax'
-    | 'displayPictureStandard';
+    | 'displayPictureStandard'
+    | 'backgroundPictureOriginal'
+    | 'backgroundPictureThumbnail'
+    | 'backgroundPictureMax'
+    | 'backgroundPictureStandard';
 
 export interface IImage<T extends string = string> {
     resolution: string;
@@ -34,23 +38,12 @@ export interface IImage<T extends string = string> {
     type: T;
 }
 
-export interface IProfilePictureImages {
+export interface IUserImage {
     mediaUrls: Array<IMediaUrl>;
     mediaStatus: string;
 }
 
-export type IBackgroundPictureImageType =
-    | 'backgroundPictureOriginal'
-    | 'backgroundPictureThumbnail'
-    | 'backgroundPictureMax'
-    | 'backgroundPictureStandard';
-
-export interface IBackgroundPictureImages {
-    mediaUrls: Array<IMediaUrl>;
-    mediaStatus: string;
-}
-
-type IMediaUrl = IImage<IProfilePictureImageType | IBackgroundPictureImageType>;
+type IMediaUrl = IImage<IUserImageType>;
 
 const MediaUrlSchema = new Schema<IMediaUrl>({
     resolution: { type: String },
@@ -58,17 +51,21 @@ const MediaUrlSchema = new Schema<IMediaUrl>({
     type: { type: String },
 });
 
+export type IProfilePictureImages = IUserImage;
+
 const ProfilePictureImageSchema = new Schema<IProfilePictureImages>({
     mediaUrls: { type: Array.of(MediaUrlSchema) },
     mediaStatus: { type: String },
 });
 
-export type IUserRole = 'user' | 'admin';
+export type IBackgroundPictureImages = IUserImage;
 
 const BackgroundPictureImageSchema = new Schema<IBackgroundPictureImages>({
     mediaUrls: { type: Array.of(MediaUrlSchema) },
     mediaStatus: { type: String },
 });
+
+export type IUserRole = 'user' | 'admin';
 
 export interface IUser {
     id: string;
