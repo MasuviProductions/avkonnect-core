@@ -95,8 +95,8 @@ export interface IUser {
     certificationsRefId: string;
     unseenNotificationsCount?: number;
     settingsRefId: string;
-    profilePictureImages: IImage<IProfilePictureImageType>[];
-    backgroundPictureImages: IImage<IBackgroundPictureImageType>[];
+    profilePictureImages: IProfilePictureImages;
+    backgroundPictureImages: IBackgroundPictureImages;
 }
 const UserSchema = new Schema<IUser>(
     {
