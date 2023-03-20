@@ -5,7 +5,7 @@ import { HttpDynamoDBResponsePagination, HttpResponsePagination } from '../../in
 import { IDynamooseDocument } from '../../interfaces/generic';
 import { IMinifiedUser } from '../../interfaces/api';
 import { ICognitoUserInfoApiResponse } from '@masuviproductions/avkonnect-auth/lib/interfaces/jwt';
-import { IBackgroundPictureImageType, IImage, IProfilePictureImageType, IUser, IUserRole } from '../../models/user';
+import { IUser, IUserRole } from '../../models/user';
 import DBQueries from './queries';
 import { IProjects } from '../../models/projects';
 import { ISkills } from '../../models/skills';
@@ -51,8 +51,8 @@ export const getNewUserModelFromJWTUserPayload = async (
         certificationsRefId: newCertification.id,
         unseenNotificationsCount: 0,
         settingsRefId: newSettings.id,
-        profilePictureImages: Array<IImage<IProfilePictureImageType>>(),
-        backgroundPictureImages: Array<IImage<IBackgroundPictureImageType>>(),
+        profilePictureImages: { mediaUrls: [], mediaStatus: 'NA' },
+        backgroundPictureImages: { mediaUrls: [], mediaStatus: 'NA' },
     };
     return newUser;
 };

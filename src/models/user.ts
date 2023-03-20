@@ -22,42 +22,50 @@ const UserSearchfieldsSchema = new Schema<IUserSearchFields>({
     name: { type: String },
 });
 
-export type IOrientation = 'portrait' | 'landscape';
-
-export type IProfilePictureImageType =
+export type IUserImageType =
     | 'displayPictureOriginal'
     | 'displayPictureThumbnail'
     | 'displayPictureMax'
-    | 'displayPictureStandard';
-
-export interface IImage<T extends string = string> {
-    resolution: string;
-    url: string;
-    orientation: IOrientation;
-    type: T;
-}
-
-const ProfilePictureImageSchema = new Schema<IImage<IProfilePictureImageType>>({
-    resolution: { type: String },
-    url: { type: String },
-    orientation: { type: String },
-    type: { type: String },
-});
-
-export type IUserRole = 'user' | 'admin';
-
-export type IBackgroundPictureImageType =
+    | 'displayPictureStandard'
     | 'backgroundPictureOriginal'
     | 'backgroundPictureThumbnail'
     | 'backgroundPictureMax'
     | 'backgroundPictureStandard';
 
-const BackgroundPictureImageSchema = new Schema<IImage<IBackgroundPictureImageType>>({
+export interface IImage<T extends string = string> {
+    resolution: string;
+    url: string;
+    type: T;
+}
+
+export interface IUserImage {
+    mediaUrls: Array<IMediaUrl>;
+    mediaStatus: string;
+}
+
+type IMediaUrl = IImage<IUserImageType>;
+
+const MediaUrlSchema = new Schema<IMediaUrl>({
     resolution: { type: String },
     url: { type: String },
-    orientation: { type: String },
     type: { type: String },
 });
+
+export type IProfilePictureImages = IUserImage;
+
+const ProfilePictureImageSchema = new Schema<IProfilePictureImages>({
+    mediaUrls: { type: Array.of(MediaUrlSchema) },
+    mediaStatus: { type: String },
+});
+
+export type IBackgroundPictureImages = IUserImage;
+
+const BackgroundPictureImageSchema = new Schema<IBackgroundPictureImages>({
+    mediaUrls: { type: Array.of(MediaUrlSchema) },
+    mediaStatus: { type: String },
+});
+
+export type IUserRole = 'user' | 'admin';
 
 export interface IUser {
     id: string;
@@ -84,8 +92,8 @@ export interface IUser {
     certificationsRefId: string;
     unseenNotificationsCount?: number;
     settingsRefId: string;
-    profilePictureImages: Array<IImage<IProfilePictureImageType>>;
-    backgroundPictureImages: Array<IImage<IBackgroundPictureImageType>>;
+    profilePictureImages: IProfilePictureImages;
+    backgroundPictureImages: IBackgroundPictureImages;
 }
 const UserSchema = new Schema<IUser>(
     {
@@ -118,8 +126,8 @@ const UserSchema = new Schema<IUser>(
     }
 );
 UserSchema.add({ unseenNotificationsCount: { type: Number } });
-UserSchema.add({ profilePictureImages: { type: Array.of(ProfilePictureImageSchema) } });
-UserSchema.add({ backgroundPictureImages: { type: Array.of(BackgroundPictureImageSchema) } });
+UserSchema.add({ profilePictureImages: ProfilePictureImageSchema });
+UserSchema.add({ backgroundPictureImages: BackgroundPictureImageSchema });
 
 export default mongoose.model<IUser>(TABLE.USERS, UserSchema);
 
